@@ -182,8 +182,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: PRESS ANY KEY
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a6e1bb5e0b82542da8c93acbe3f2c510, type: 2}
-  m_sharedMaterial: {fileID: -7638403206277152640, guid: a6e1bb5e0b82542da8c93acbe3f2c510,
+  m_fontAsset: {fileID: 11400000, guid: 0c86866be2dda1945afd2458232db447, type: 2}
+  m_sharedMaterial: {fileID: 2512682053048635545, guid: 0c86866be2dda1945afd2458232db447,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -271,7 +271,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blinkSpeed: 2
-  holdTime: 0.5
+  holdTime: 1
   targetPosition: {x: 0, y: 1200, z: -1000}
   targetRotation: {x: 50, y: 0, z: 0}
   duration: 2
