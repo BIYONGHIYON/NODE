@@ -39,5 +39,6 @@ public class SpaceShip : MonoBehaviour
         // 우주선의 '기준 위치'를 갱신
         startPosition = shipPositions[index];
         lastProgress = cameraSetup.currentProgress;
+        transform.position = startPosition;
     }
 }

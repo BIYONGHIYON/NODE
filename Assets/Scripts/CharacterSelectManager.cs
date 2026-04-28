@@ -184,4 +184,10 @@ public class CharacterSelectManager : MonoBehaviour
             SceneManager.LoadScene(nextSceneName);
         }
     }
+
+    void Awake()
+    {
+        // 이 오브젝트(카메라)가 다른 **씬** 으로 넘어가도 파괴되지 않게 설정합니다.
+        DontDestroyOnLoad(gameObject);
+    }
 }
