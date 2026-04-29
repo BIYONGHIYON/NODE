@@ -971,11 +971,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dbf6efa030e0401f81bf32a3498a822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentProgress: 1
+  currentProgress: 0
   viewPositions:
   - {x: 0, y: 500, z: -1300}
   - {x: 0, y: 300, z: -800}
   - {x: 0, y: 150, z: -400}
+  phase1XRotations:
+  - 115
+  - 85
+  - 73
   videoPlayer: {fileID: 0}
 --- !u!114 &330585550
 MonoBehaviour:

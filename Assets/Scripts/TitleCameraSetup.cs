@@ -8,7 +8,18 @@ public class TitleCameraSetup : MonoBehaviour
     [Header("Camera Setup")]
     public int currentProgress = 0; 
     public Vector3[] viewPositions;
+    public float[] phase1XRotations; 
 
+    // 안전하게 값을 가져오기 위한 함수
+    public float GetPhase1XRotation()
+    {
+        if (phase1XRotations != null && phase1XRotations.Length > 0)
+        {
+            int index = Mathf.Clamp(currentProgress, 0, phase1XRotations.Length - 1);
+            return phase1XRotations[index];
+        }
+        return -90f; // 기본값
+    }
     [Header("Video Setup")]
     public VideoPlayer videoPlayer; // 인스펙터에서 비디오 플레이어를 연결할 변수
 

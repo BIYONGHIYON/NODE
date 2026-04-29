@@ -180,7 +180,6 @@ public class CharacterSelectManager : MonoBehaviour
     {
         if (p1Ready && p2Ready)
         {
-            Debug.Log("모두 레디 완료! 게임 씬으로 이동합니다.");
             SceneManager.LoadScene(nextSceneName);
         }
     }
