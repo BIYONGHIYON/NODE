@@ -971,7 +971,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dbf6efa030e0401f81bf32a3498a822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentProgress: 0
+  currentProgress: 2
   viewPositions:
   - {x: 0, y: 500, z: -1300}
   - {x: 0, y: 300, z: -800}
