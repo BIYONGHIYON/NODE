@@ -6,7 +6,6 @@ public class CharacterSelectManager : MonoBehaviour
 {
     // [추가됨] Center 상태가 추가되었습니다.
     public enum CharacterType { Center, LeftCharacter, RightCharacter }
-    private bool isGameStarted = false;
     [Header("Player 1 Settings")]
     public CharacterType p1Choice = CharacterType.Center; // 시작은 중앙에서
     public bool p1Ready = false;
@@ -43,7 +42,6 @@ public class CharacterSelectManager : MonoBehaviour
 
     void Update()
     {
-        if (isGameStarted) return;
         // 1. 카드 스무스 이동 (매 프레임)
         MoveCardsSmoothly();
 
@@ -181,14 +179,11 @@ public class CharacterSelectManager : MonoBehaviour
     {
         if (p1Ready && p2Ready)
         {
-            isGameStarted = true;
+            // 씬을 넘기기 직전에 Static 변수에 플레이어들의 선택을 저장합니다.
+            GameData.p1SelectedChar = (int)p1Choice;
+            GameData.p2SelectedChar = (int)p2Choice;
+
             SceneManager.LoadScene(nextSceneName);
         }
-    }
-
-    void Awake()
-    {
-        // 이 오브젝트(카메라)가 다른 **씬** 으로 넘어가도 파괴되지 않게 설정합니다.
-        DontDestroyOnLoad(gameObject);
     }
 }

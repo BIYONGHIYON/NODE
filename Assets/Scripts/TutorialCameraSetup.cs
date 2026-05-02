@@ -14,18 +14,19 @@ public class TutorialCameraSetup : MonoBehaviour
     public Vector3 localRotationOffset = Vector3.zero;
 
     [Header("Character Tracking & Placement")]
-    public Transform character1;
-    public Transform character2;
+    // 기존처럼 인스펙터에서 씬에 있는 캐릭터를 직접 끌어다 넣으시면 됩니다!
+    public Transform character1; // 무조건 씬의 '왼쪽' 캐릭터 할당
+    public Transform character2; // 무조건 씬의 '오른쪽' 캐릭터 할당
     
     [Space(10)]
     [Header("Character 1 Settings")]
-    public Vector3 char1LocalOffset = new Vector3(-1.5f, 0f, 15f); // 카메라 기준 오프셋
+    public Vector3 char1LocalOffset = new Vector3(-1.5f, 0f, 15f); 
     public Vector3 char1LocalRotation = Vector3.zero;
     public Vector3 char1LocalScale = Vector3.one; 
     
     [Space(5)]
     [Header("Character 2 Settings")]
-    public Vector3 char2LocalOffset = new Vector3(1.5f, 0f, 15f); // 카메라 기준 오프셋
+    public Vector3 char2LocalOffset = new Vector3(1.5f, 0f, 15f); 
     public Vector3 char2LocalRotation = Vector3.zero;
     public Vector3 char2LocalScale = Vector3.one; 
 
@@ -45,18 +46,19 @@ public class TutorialCameraSetup : MonoBehaviour
                 Vector3 finalCamPos = titleSetup.viewPositions[index];
                 Quaternion finalCamRot = Quaternion.Euler(targetRotation);
 
-                // 카메라의 최종 위치와 회전을 기준으로 하는 변환 행렬 생성
                 Matrix4x4 camMatrix = Matrix4x4.TRS(finalCamPos, finalCamRot, Vector3.one);
 
                 if (spaceshipObject != null)
                 {
-                    // 1. 우주선 배치 (카메라 좌표계 기준)
                     spaceshipObject.position = camMatrix.MultiplyPoint3x4(localPositionOffset);
                     spaceshipObject.rotation = finalCamRot * Quaternion.Euler(localRotationOffset);
                 }
 
-                // 2. 캐릭터 배치 (우주선이 아닌 카메라 좌표계를 기준으로 직접 배치)
+                // 기존 오프셋 배치 로직 그대로 사용
                 PlaceCharactersRelativeToCamera(camMatrix, finalCamRot);
+
+                // [핵심] 캐릭터 선택 결과에 따라 조작키를 씬에 있는 캐릭터에게 나눠줍니다.
+                AssignControls();
 
                 StartCoroutine(SmoothTransition(mainCam.transform, finalCamPos, targetRotation));
             }
@@ -74,18 +76,12 @@ public class TutorialCameraSetup : MonoBehaviour
         }
     }
 
-    // 우주선의 Transform 대신 카메라의 Matrix와 Rotation을 인자로 받습니다.
     void PlaceCharactersRelativeToCamera(Matrix4x4 camMatrix, Quaternion camRot)
     {
         if (character1 != null)
         {
-            // 위치: 카메라 좌표계 기준 오프셋 적용
             character1.position = camMatrix.MultiplyPoint3x4(char1LocalOffset);
-
-            // 회전: 카메라의 회전값에 캐릭터의 로컬 오프셋 각도를 결합
-            // 이 방식은 우주선이 회전 기준이 아니므로 짐벌락 현상이 발생하지 않습니다.
             character1.rotation = camRot * Quaternion.Euler(char1LocalRotation);
-            
             character1.localScale = char1LocalScale;
         }
 
@@ -139,5 +135,55 @@ public class TutorialCameraSetup : MonoBehaviour
         camTransform.rotation = finalRot;
 
         isTrackingStarted = true;
+    }
+
+    // [변경됨] 씬에 이미 존재하는 캐릭터들의 컴포넌트를 가져와서 키만 세팅합니다.
+    void AssignControls()
+    {
+        if (character1 == null || character2 == null) return;
+
+        MovingAst leftMove = character1.GetComponent<MovingAst>();
+        RopeAction leftRope = character1.GetComponent<RopeAction>();
+
+        MovingAst rightMove = character2.GetComponent<MovingAst>();
+        RopeAction rightRope = character2.GetComponent<RopeAction>();
+
+        // [수정된 부분] 로그에 1이 찍힐 때 왼쪽 캐릭터를 주도록 조건을 바꿉니다.
+        if (GameData.p1SelectedChar == 1) 
+        {
+            ApplyP1Controls(leftMove, leftRope);   // 왼쪽 -> P1(WASD)
+            ApplyP2Controls(rightMove, rightRope); // 오른쪽 -> P2(방향키)
+        }
+        else // 결과가 2(오른쪽)일 때
+        {
+            ApplyP1Controls(rightMove, rightRope); // 오른쪽 -> P1(WASD)
+            ApplyP2Controls(leftMove, leftRope);   // 왼쪽 -> P2(방향키)
+        }
+    }
+
+    // P1 (WASD + F) 키 세팅용 헬퍼 함수
+    void ApplyP1Controls(MovingAst move, RopeAction rope)
+    {
+        if (move != null)
+        {
+            move.upKey = KeyCode.W;
+            move.downKey = KeyCode.S;
+            move.leftKey = KeyCode.A;
+            move.rightKey = KeyCode.D;
+        }
+        if (rope != null) rope.ropeKey = KeyCode.F;
+    }
+
+    // P2 (방향키 + RightControl) 키 세팅용 헬퍼 함수
+    void ApplyP2Controls(MovingAst move, RopeAction rope)
+    {
+        if (move != null)
+        {
+            move.upKey = KeyCode.UpArrow;
+            move.downKey = KeyCode.DownArrow;
+            move.leftKey = KeyCode.LeftArrow;
+            move.rightKey = KeyCode.RightArrow;
+        }
+        if (rope != null) rope.ropeKey = KeyCode.RightControl;
     }
 }

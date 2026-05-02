@@ -664,7 +664,6 @@ MonoBehaviour:
   ropeDamper: 5
   ropeLaunchPoint: {fileID: 14311094}
   ropeShootSpeed: 10
-  ropeCooldown: 0.2
 --- !u!145 &467839701
 SpringJoint:
   m_ObjectHideFlags: 0
@@ -916,7 +915,6 @@ MonoBehaviour:
   ropeDamper: 5
   ropeLaunchPoint: {fileID: 61108219}
   ropeShootSpeed: 10
-  ropeCooldown: 0.2
 --- !u!145 &482495793
 SpringJoint:
   m_ObjectHideFlags: 0
@@ -1570,6 +1568,8 @@ MonoBehaviour:
   char2LocalOffset: {x: 0.5, y: -0.5, z: 1.8}
   char2LocalRotation: {x: 0, y: 180, z: 0}
   char2LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  leftCharacterPrefab: {fileID: 467839694}
+  rightCharacterPrefab: {fileID: 482495786}
 --- !u!4 &744904741
 Transform:
   m_ObjectHideFlags: 0
