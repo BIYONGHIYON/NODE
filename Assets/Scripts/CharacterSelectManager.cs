@@ -6,7 +6,7 @@ public class CharacterSelectManager : MonoBehaviour
 {
     // [추가됨] Center 상태가 추가되었습니다.
     public enum CharacterType { Center, LeftCharacter, RightCharacter }
-
+    private bool isGameStarted = false;
     [Header("Player 1 Settings")]
     public CharacterType p1Choice = CharacterType.Center; // 시작은 중앙에서
     public bool p1Ready = false;
@@ -43,6 +43,7 @@ public class CharacterSelectManager : MonoBehaviour
 
     void Update()
     {
+        if (isGameStarted) return;
         // 1. 카드 스무스 이동 (매 프레임)
         MoveCardsSmoothly();
 
@@ -180,6 +181,7 @@ public class CharacterSelectManager : MonoBehaviour
     {
         if (p1Ready && p2Ready)
         {
+            isGameStarted = true;
             SceneManager.LoadScene(nextSceneName);
         }
     }
