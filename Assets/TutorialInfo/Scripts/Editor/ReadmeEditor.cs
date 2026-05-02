@@ -87,7 +87,6 @@ public class ReadmeEditor : Editor
         }
         else
         {
-            Debug.Log("Couldn't find a readme");
             return null;
         }
     }
