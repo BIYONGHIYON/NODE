@@ -625,7 +625,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thrust: 1
   rotationSpeed: 2
-  idleTimeBeforeReset: 1
+  idleTimeBeforeReset: 3
   upKey: 119
   downKey: 115
   leftKey: 97
@@ -669,7 +669,7 @@ MonoBehaviour:
   ropeKey2: 0
   ropeRange: 1
   ropeSpring: 100
-  ropeDamper: 5
+  ropeDamper: 1
   ropeLaunchPoint: {fileID: 14311094}
   ropeShootSpeed: 10
 --- !u!145 &467839701
@@ -717,7 +717,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2d0f6fad9828ac24191932c73a9ae5d7, type: 2}
+  - {fileID: 2100000, guid: b62799e082a434ae1928e0f919aa7cc5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -748,8 +748,8 @@ LineRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.01908493
-        value: 0.02702713
+        time: 0
+        value: 0.017858505
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -792,7 +792,7 @@ LineRenderer:
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
-    textureMode: 0
+    textureMode: 1
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
@@ -836,7 +836,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thrust: 1
   rotationSpeed: 2
-  idleTimeBeforeReset: 1
+  idleTimeBeforeReset: 3
   upKey: 273
   downKey: 274
   leftKey: 276
@@ -971,7 +971,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2d0f6fad9828ac24191932c73a9ae5d7, type: 2}
+  - {fileID: 2100000, guid: b62799e082a434ae1928e0f919aa7cc5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1002,8 +1002,8 @@ LineRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.01908493
-        value: 0.02702713
+        time: 0
+        value: 0.017858505
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -1046,7 +1046,7 @@ LineRenderer:
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
-    textureMode: 0
+    textureMode: 1
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0

@@ -17,9 +17,6 @@ public class MovingAst : MonoBehaviour
     public KeyCode leftKey;
     public KeyCode rightKey;
 
-    // 캐릭터가 마지막으로 향했던 좌우 방향
-    private float lastFacingX = 1f; 
-
     private float currentIdleTime = 0f; 
 
     void Start()
@@ -51,11 +48,13 @@ public class MovingAst : MonoBehaviour
         if (anim != null)
         {
             anim.SetBool("isMoving", isMoving);
-        }
 
-        // 좌/우 입력이 들어왔다면 마지막 방향 업데이트
-        if (moveX > 0f) lastFacingX = 1f;
-        else if (moveX < 0f) lastFacingX = -1f;
+            // [추가됨] 키 입력으로 이동이 발생하면 isTying 상태를 강제로 false로 만듭니다.
+            if (isMoving)
+            {
+                anim.SetBool("isTying", false);
+            }
+        }
 
         if (isMoving)
         {
@@ -70,7 +69,6 @@ public class MovingAst : MonoBehaviour
             // 좌우 입력 없이 위/아래 입력만 있을 때 (순수 수직 이동)
             if (moveX == 0f && moveY != 0f)
             {
-                // [수정됨] 1f를 -1f로 변경하여 180도 뒤집힌 화면 앞쪽 대각선을 바라보게 합니다.
                 lookDirection = new Vector3(0f, moveY, -1f).normalized;
             }
 
@@ -86,9 +84,9 @@ public class MovingAst : MonoBehaviour
             // 지정된 시간이 지나면 완벽한 정면(화면 밖, 카메라 쪽)을 바라봄
             if (currentIdleTime >= idleTimeBeforeReset)
             {
-                // [수정됨] Vector3.forward 대신 Vector3.back을 사용하여 180도 돌립니다.
                 Quaternion targetRotation = Quaternion.LookRotation(Vector3.back);
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+                if (anim != null) anim.SetBool("isTying", false);
             }
         }
     }

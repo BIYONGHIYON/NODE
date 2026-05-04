@@ -7,10 +7,13 @@ public class RopeAction : MonoBehaviour
     private SpringJoint sj;
     private bool isRoped = false;
     
-    // isShooting 대신 발사/회수 두 가지 애니메이션 상태를 모두 체크하기 위해 이름을 바꿨습니다.
+    // [추가됨] 로프 연결 상태를 체크하고 애니메이터에 전달하기 위한 변수
+    private bool isTying = false; 
+
     private bool isAnimating = false; 
     private Transform targetAnchor;
     private Coroutine ropeCoroutine;
+    private Animator anim; 
 
     [Header("로프 설정")]
     public KeyCode ropeKey1;
@@ -23,6 +26,11 @@ public class RopeAction : MonoBehaviour
     [Header("로프 애니메이션 설정")]
     public float ropeShootSpeed = 40f; 
 
+    void Start()
+    {
+        anim = GetComponentInChildren<Animator>(); 
+    }
+    
     void Awake()
     {
         lr = GetComponent<LineRenderer>();
@@ -38,12 +46,10 @@ public class RopeAction : MonoBehaviour
     {
         if (Input.GetKeyDown(ropeKey1) || Input.GetKeyDown(ropeKey2))
         {
-            // 로프가 연결되어 있거나, 무언가 연출(발사/회수)이 진행 중이라면 무조건 끊고 회수합니다.
             if (isRoped || isAnimating) Detach();
             else TryAttach();
         }
 
-        // 뻗어나가거나 감기는 애니메이션 중이 아닐 때(완전히 연결된 상태)만 위치를 업데이트합니다.
         if (isRoped && targetAnchor != null && !isAnimating)
         {
             lr.SetPosition(0, ropeLaunchPoint.position);
@@ -61,14 +67,12 @@ public class RopeAction : MonoBehaviour
                 targetAnchor = col.transform;
                 
                 if (ropeCoroutine != null) StopCoroutine(ropeCoroutine);
-                // 발사 애니메이션 시작
                 ropeCoroutine = StartCoroutine(AnimateRopeShoot());
                 return;
             }
         }
     }
 
-    // [로프가 뻗어 나가는 애니메이션]
     IEnumerator AnimateRopeShoot()
     {
         isAnimating = true;
@@ -88,12 +92,16 @@ public class RopeAction : MonoBehaviour
         }
 
         isAnimating = false;
-        AttachPhysics(); // 연출이 끝나면 물리 엔진 연결
+        AttachPhysics(); 
     }
 
     void AttachPhysics()
     {
         isRoped = true;
+
+        // [추가됨] 로프가 대상에 닿아 완전히 연결되는 순간 true
+        isTying = true;
+        if (anim != null) anim.SetBool("isTying", isTying);
 
         sj.anchor = transform.InverseTransformPoint(ropeLaunchPoint.position); 
         sj.connectedAnchor = targetAnchor.position;
@@ -105,19 +113,20 @@ public class RopeAction : MonoBehaviour
 
     void Detach()
     {
-        // 1. 물리적 연결은 즉시 해제하여 플레이어가 즉각적으로 움직일 수 있게 합니다.
         isRoped = false;
+
+        isTying = true;
+        if (anim != null) anim.SetBool("isTying", isTying);
+
         sj.spring = 0f;
         sj.damper = 0f;
         targetAnchor = null;
 
-        // 2. 진행 중이던 발사/회수 연출 코루틴을 강제로 정지합니다.
         if (ropeCoroutine != null) StopCoroutine(ropeCoroutine);
 
-        // 3. 선이 켜져 있는 상태라면, 현재 선의 끝점에서부터 감아들이는 연출을 시작합니다.
         if (lr.enabled)
         {
-            Vector3 currentEndPos = lr.GetPosition(1); // 현재 뻗어있는 선의 끝점 좌표 가져오기
+            Vector3 currentEndPos = lr.GetPosition(1); 
             ropeCoroutine = StartCoroutine(AnimateRopeRetract(currentEndPos));
         }
         else
@@ -126,16 +135,13 @@ public class RopeAction : MonoBehaviour
         }
     }
 
-    // [로프가 다시 감겨 돌아오는 애니메이션]
     IEnumerator AnimateRopeRetract(Vector3 startRetractPos)
     {
         isAnimating = true;
-        Vector3 currentEndPos = startRetractPos; // 회수를 시작할 위치
+        Vector3 currentEndPos = startRetractPos; 
 
-        // 선의 끝점이 발사 지점(손)에 도달할 때까지 반복
         while (Vector3.Distance(currentEndPos, ropeLaunchPoint.position) > 0.1f)
         {
-            // MoveTowards를 사용해 끝점을 우주인 쪽으로 일정한 속도로 이동
             currentEndPos = Vector3.MoveTowards(currentEndPos, ropeLaunchPoint.position, ropeShootSpeed * Time.deltaTime);
 
             lr.SetPosition(0, ropeLaunchPoint.position);
@@ -144,7 +150,6 @@ public class RopeAction : MonoBehaviour
             yield return null;
         }
 
-        // 완전히 감겼으므로 선을 끄고 애니메이션 상태 종료
         lr.enabled = false;
         isAnimating = false;
     }
