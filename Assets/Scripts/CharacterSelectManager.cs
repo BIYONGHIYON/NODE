@@ -108,7 +108,7 @@ public class CharacterSelectManager : MonoBehaviour
             }
         }
         
-        if (Input.GetKeyDown(KeyCode.RightControl))
+        if (Input.GetKeyDown(KeyCode.RightControl)||Input.GetKeyDown(KeyCode.RightAlt))
         {
             if (!p2Ready)
             {

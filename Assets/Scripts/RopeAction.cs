@@ -13,7 +13,8 @@ public class RopeAction : MonoBehaviour
     private Coroutine ropeCoroutine;
 
     [Header("로프 설정")]
-    public KeyCode ropeKey;      
+    public KeyCode ropeKey1;
+    public KeyCode ropeKey2;      
     public float ropeRange = 7f; 
     public float ropeSpring = 50f; 
     public float ropeDamper = 5f;  
@@ -35,7 +36,7 @@ public class RopeAction : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(ropeKey))
+        if (Input.GetKeyDown(ropeKey1) || Input.GetKeyDown(ropeKey2))
         {
             // 로프가 연결되어 있거나, 무언가 연출(발사/회수)이 진행 중이라면 무조건 끊고 회수합니다.
             if (isRoped || isAnimating) Detach();

@@ -171,7 +171,7 @@ public class TutorialCameraSetup : MonoBehaviour
             move.leftKey = KeyCode.A;
             move.rightKey = KeyCode.D;
         }
-        if (rope != null) rope.ropeKey = KeyCode.F;
+        if (rope != null) rope.ropeKey1 = KeyCode.F;
     }
 
     // P2 (방향키 + RightControl) 키 세팅용 헬퍼 함수
@@ -184,6 +184,9 @@ public class TutorialCameraSetup : MonoBehaviour
             move.leftKey = KeyCode.LeftArrow;
             move.rightKey = KeyCode.RightArrow;
         }
-        if (rope != null) rope.ropeKey = KeyCode.RightControl;
+        if (rope != null) {
+            rope.ropeKey1 = KeyCode.RightControl;
+            rope.ropeKey2 = KeyCode.RightAlt; // P2는 오른쪽 컨트롤 하나로 발사/회수 모두 처리
+        }
     }
 }
