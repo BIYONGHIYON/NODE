@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class MovingAst : MonoBehaviour
 {
-    public float thrust = 15f; // 추진력
+    public float thrust = 15f; 
     
     [Header("Rotation Settings")]
-    public float rotationSpeed = 10f; // 회전 속도
-    public float idleTimeBeforeReset = 1f; // 정면을 보기까지의 대기 시간 (초)
+    public float rotationSpeed = 10f; 
+    public float idleTimeBeforeReset = 1f; 
 
     private Rigidbody rb;
     private Animator anim; 
@@ -18,6 +18,11 @@ public class MovingAst : MonoBehaviour
     public KeyCode rightKey;
 
     private float currentIdleTime = 0f; 
+    
+    // Update에서 입력받은 값을 FixedUpdate로 전달하기 위한 변수
+    private float inputMoveX = 0f;
+    private float inputMoveY = 0f;
+    private bool isMoving = false;
 
     void Start()
     {
@@ -30,58 +35,57 @@ public class MovingAst : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    void Update()
     {
-        float moveX = 0f;
-        float moveY = 0f;
+        // 1. 매 프레임 입력값 갱신 (누락 방지)
+        inputMoveX = 0f;
+        inputMoveY = 0f;
 
-        // 개별 키 입력 확인
-        if (Input.GetKey(upKey)) moveY += 0.4f;
-        if (Input.GetKey(downKey)) moveY -= 0.8f;
-        if (Input.GetKey(rightKey)) moveX += 1f;
-        if (Input.GetKey(leftKey)) moveX -= 1f;
+        if (Input.GetKey(upKey)) inputMoveY += 0.4f;
+        if (Input.GetKey(downKey)) inputMoveY -= 0.8f;
+        if (Input.GetKey(rightKey)) inputMoveX += 1f;
+        if (Input.GetKey(leftKey)) inputMoveX -= 1f;
 
-        // 실제 물리 이동에 쓰일 벡터 (이동 자체는 화면 평면인 XY축으로만 이루어짐)
-        Vector3 moveDirection = new Vector3(moveX, moveY, 0).normalized;
-        bool isMoving = moveDirection != Vector3.zero;
+        Vector3 moveDirection = new Vector3(inputMoveX, inputMoveY, 0).normalized;
+        isMoving = moveDirection != Vector3.zero;
 
+        // 2. 애니메이션 상태 업데이트
         if (anim != null)
         {
             anim.SetBool("isMoving", isMoving);
-
-            // [추가됨] 키 입력으로 이동이 발생하면 isTying 상태를 강제로 false로 만듭니다.
             if (isMoving)
             {
                 anim.SetBool("isTying", false);
             }
         }
+    }
+
+    void FixedUpdate()
+    {
+        Vector3 moveDirection = new Vector3(inputMoveX, inputMoveY, 0).normalized;
 
         if (isMoving)
         {
             currentIdleTime = 0f;
 
-            // 1. 이동: 방향 그대로 물리적인 힘 가하기
+            // 1. 이동 (힘 가하기)
             rb.AddForce(moveDirection * thrust);
 
-            // 2. 회전 벡터 계산
+            // 2. 회전 로직
             Vector3 lookDirection = moveDirection;
 
-            // 좌우 입력 없이 위/아래 입력만 있을 때 (순수 수직 이동)
-            if (moveX == 0f && moveY != 0f)
+            if (inputMoveX == 0f && inputMoveY != 0f)
             {
-                lookDirection = new Vector3(0f, moveY, -1f).normalized;
+                lookDirection = new Vector3(0f, inputMoveY, -1f).normalized;
             }
 
-            // 계산된 방향으로 부드럽게 회전
             Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
         }
         else
         {
-            // 키 입력이 없으면 대기 시간 누적
             currentIdleTime += Time.fixedDeltaTime;
 
-            // 지정된 시간이 지나면 완벽한 정면(화면 밖, 카메라 쪽)을 바라봄
             if (currentIdleTime >= idleTimeBeforeReset)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(Vector3.back);

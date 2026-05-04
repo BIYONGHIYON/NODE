@@ -5,11 +5,13 @@ TagManager:
   serializedVersion: 2
   tags:
   - Anchor
+  - TrackingObject
+  - Actors
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - 

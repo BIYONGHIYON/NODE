@@ -15,17 +15,17 @@ public class TutorialCameraSetup : MonoBehaviour
 
     [Header("Character Tracking & Placement")]
     // 기존처럼 인스펙터에서 씬에 있는 캐릭터를 직접 끌어다 넣으시면 됩니다!
-    public Transform character1; // 무조건 씬의 '왼쪽' 캐릭터 할당
-    public Transform character2; // 무조건 씬의 '오른쪽' 캐릭터 할당
+    public Transform character1; 
+    public Transform character2; 
     
     [Space(10)]
-    [Header("Character 1 Settings")]
+    [Header("Character 1 Settings (왼쪽 자리)")]
     public Vector3 char1LocalOffset = new Vector3(-1.5f, 0f, 15f); 
     public Vector3 char1LocalRotation = Vector3.zero;
     public Vector3 char1LocalScale = Vector3.one; 
     
     [Space(5)]
-    [Header("Character 2 Settings")]
+    [Header("Character 2 Settings (오른쪽 자리)")]
     public Vector3 char2LocalOffset = new Vector3(1.5f, 0f, 15f); 
     public Vector3 char2LocalRotation = Vector3.zero;
     public Vector3 char2LocalScale = Vector3.one; 
@@ -35,6 +35,15 @@ public class TutorialCameraSetup : MonoBehaviour
 
     void Start()
     {
+        // [핵심 추가] 게임 시작 직후, P1이 2번 캐릭터를 골랐다면 위치를 바꾸기 위해 변수를 스왑합니다.
+        // 이렇게 하면 이후 로직에서 character1은 무조건 'P1이 조작하는 왼쪽 캐릭터'가 됩니다.
+        if (GameData.p1SelectedChar == 2)
+        {
+            Transform temp = character1;
+            character1 = character2;
+            character2 = temp;
+        }
+
         Camera mainCam = Camera.main;
 
         if (mainCam != null)
@@ -54,10 +63,10 @@ public class TutorialCameraSetup : MonoBehaviour
                     spaceshipObject.rotation = finalCamRot * Quaternion.Euler(localRotationOffset);
                 }
 
-                // 기존 오프셋 배치 로직 그대로 사용
+                // 스왑된 변수를 바탕으로 배치를 진행하므로 자동으로 P1 캐릭터가 왼쪽(-1.5f)에 배치됩니다.
                 PlaceCharactersRelativeToCamera(camMatrix, finalCamRot);
 
-                // [핵심] 캐릭터 선택 결과에 따라 조작키를 씬에 있는 캐릭터에게 나눠줍니다.
+                // 스왑이 완료되었으므로 무조건 character1에게 P1 조작을 주면 됩니다.
                 AssignControls();
 
                 StartCoroutine(SmoothTransition(mainCam.transform, finalCamPos, targetRotation));
@@ -137,7 +146,7 @@ public class TutorialCameraSetup : MonoBehaviour
         isTrackingStarted = true;
     }
 
-    // [변경됨] 씬에 이미 존재하는 캐릭터들의 컴포넌트를 가져와서 키만 세팅합니다.
+    // [변경됨] 복잡한 조건문 없이 직관적으로 조작을 할당합니다.
     void AssignControls()
     {
         if (character1 == null || character2 == null) return;
@@ -148,17 +157,11 @@ public class TutorialCameraSetup : MonoBehaviour
         MovingAst rightMove = character2.GetComponent<MovingAst>();
         RopeAction rightRope = character2.GetComponent<RopeAction>();
 
-        // [수정된 부분] 로그에 1이 찍힐 때 왼쪽 캐릭터를 주도록 조건을 바꿉니다.
-        if (GameData.p1SelectedChar == 1) 
-        {
-            ApplyP1Controls(leftMove, leftRope);   // 왼쪽 -> P1(WASD)
-            ApplyP2Controls(rightMove, rightRope); // 오른쪽 -> P2(방향키)
-        }
-        else // 결과가 2(오른쪽)일 때
-        {
-            ApplyP1Controls(rightMove, rightRope); // 오른쪽 -> P1(WASD)
-            ApplyP2Controls(leftMove, leftRope);   // 왼쪽 -> P2(방향키)
-        }
+        // character1은 이제 무조건 P1의 캐릭터이자 왼쪽 자리이므로 P1 컨트롤을 부여합니다.
+        ApplyP1Controls(leftMove, leftRope);
+
+        // character2는 무조건 P2의 캐릭터이자 오른쪽 자리이므로 P2 컨트롤을 부여합니다.
+        ApplyP2Controls(rightMove, rightRope); 
     }
 
     // P1 (WASD + F) 키 세팅용 헬퍼 함수
@@ -186,7 +189,7 @@ public class TutorialCameraSetup : MonoBehaviour
         }
         if (rope != null) {
             rope.ropeKey1 = KeyCode.RightControl;
-            rope.ropeKey2 = KeyCode.RightAlt; // P2는 오른쪽 컨트롤 하나로 발사/회수 모두 처리
+            rope.ropeKey2 = KeyCode.RightAlt;
         }
     }
 }

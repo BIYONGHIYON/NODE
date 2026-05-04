@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class RopeAction : MonoBehaviour
 {
+    public static int connectedRopes = 0;
     private LineRenderer lr;
     private SpringJoint sj;
     private bool isRoped = false;
@@ -33,6 +34,7 @@ public class RopeAction : MonoBehaviour
     
     void Awake()
     {
+        connectedRopes = 0;
         lr = GetComponent<LineRenderer>();
         sj = GetComponent<SpringJoint>();
 
@@ -97,6 +99,21 @@ public class RopeAction : MonoBehaviour
 
     void AttachPhysics()
     {
+        if (!isRoped)
+        {
+            connectedRopes++;
+
+            // 두 명 모두 로프를 연결했다면!
+            if (connectedRopes >= 2)
+            {
+                // 씬 전체에서 TutorialTextController 스크립트를 찾아 실행시킵니다.
+                TutorialTextController tutorialText = FindObjectOfType<TutorialTextController>();
+                if (tutorialText != null)
+                {
+                    tutorialText.OnBothHooksConnected();
+                }
+            }
+        }
         isRoped = true;
 
         // [추가됨] 로프가 대상에 닿아 완전히 연결되는 순간 true
@@ -113,6 +130,10 @@ public class RopeAction : MonoBehaviour
 
     void Detach()
     {
+        if (isRoped)
+        {
+            connectedRopes--;
+        }
         isRoped = false;
 
         isTying = true;

@@ -10,8 +10,20 @@ EditorBuildSettings:
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/CharacterScene.unity
-    guid: 1a03e5ee45e54461b8dad9df0a40f51f
+    guid: f77ebf933f0dc4e189fd2e4d5aa9cf28
   - enabled: 1
     path: Assets/Scenes/TutorialScene.unity
     guid: a674deb4d1285f14bad3fdf83541eca1
+  - enabled: 1
+    path: Assets/Scenes/EarthScene.unity
+    guid: a0eea090d338143088a528f56a992220
+  - enabled: 1
+    path: Assets/Scenes/Mars.unity
+    guid: 0395f8c2ef2754c4b89e6556118f71e4
+  - enabled: 1
+    path: Assets/Scenes/Jupiter.unity
+    guid: 8fccfd22b3e204dc09738602ad80df6f
+  - enabled: 1
+    path: Assets/Scenes/Saturn.unity
+    guid: 6b56fc9cb03ac4cfeb8acd79356f4713
   m_configObjects: {}
