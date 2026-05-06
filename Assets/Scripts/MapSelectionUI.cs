@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI; 
+using System.Collections; // 코루틴을 위해 추가됨
 
 public class MapSelectionUI : MonoBehaviour
 {
@@ -9,9 +11,12 @@ public class MapSelectionUI : MonoBehaviour
     
     [Header("Settings")]
     public float cursorMoveSpeed = 10f; 
+    public Vector3 exitCursorOffset = new Vector3(0f, -15f, 0f); 
+
+    [Header("Fade Settings")]
+    public float fadeDuration = 1f; // 페이드 연출 시간
 
     [Header("Scene Settings")]
-    [Tooltip("씬 이름 대신 'Exit'라고 적으면 맵을 닫는 버튼으로 작동합니다.")]
     public string[] planetSceneNames; 
     
     [Header("System References")]
@@ -23,22 +28,20 @@ public class MapSelectionUI : MonoBehaviour
     void OnEnable()
     {
         isTransitioning = false;
-        currentIndex = 0; // 찾지 못했을 때의 기본값은 0
+        currentIndex = 0; 
         
-        // 배열을 뒤져서 "Exit" (대소문자 구분 없이)가 적힌 인덱스를 찾습니다.
         for (int i = 0; i < planetSceneNames.Length; i++)
         {
             if (planetSceneNames[i].ToLower() == "exit")
             {
                 currentIndex = i;
-                break; // 찾았으면 반복문 종료
+                break; 
             }
         }
 
         if (planetNodes.Length > 0 && selectorCursor != null)
         {
-            // 찾은 인덱스(나가기 버튼)의 위치로 커서를 즉시 이동시킵니다.
-            selectorCursor.position = planetNodes[currentIndex].position;
+            selectorCursor.position = GetTargetPosition(currentIndex);
         }
     }
 
@@ -80,8 +83,18 @@ public class MapSelectionUI : MonoBehaviour
     {
         if (planetNodes.Length == 0 || selectorCursor == null) return;
 
-        Vector3 targetPos = planetNodes[currentIndex].position;
+        Vector3 targetPos = GetTargetPosition(currentIndex);
         selectorCursor.position = Vector3.Lerp(selectorCursor.position, targetPos, Time.deltaTime * cursorMoveSpeed);
+    }
+
+    private Vector3 GetTargetPosition(int index)
+    {
+        Vector3 pos = planetNodes[index].position;
+        if (index < planetSceneNames.Length && planetSceneNames[index].ToLower() == "exit")
+        {
+            pos += exitCursorOffset;
+        }
+        return pos;
     }
 
     void SelectPlanet()
@@ -90,18 +103,20 @@ public class MapSelectionUI : MonoBehaviour
         {
             string targetName = planetSceneNames[currentIndex];
 
-            // 1. 만약 배열에 적힌 이름이 "Exit" 이거나 "exit" 라면 맵 닫기 실행
             if (targetName == "Exit" || targetName == "exit")
             {
                 CloseMap();
-                return; // 씬 이동을 하지 않고 여기서 함수 종료
+                return; 
             }
 
-            // 2. 일반 씬 이름이라면 해당 씬으로 이동
             if (!string.IsNullOrEmpty(targetName))
             {
                 isTransitioning = true;
-                SceneManager.LoadScene(targetName);
+                
+                // [핵심 변경됨] 씬을 즉시 로드하지 않고, 파괴되지 않는 헬퍼 오브젝트를 만들어 페이드 연출을 맡깁니다.
+                GameObject helperObj = new GameObject("TransitionHelper");
+                SceneTransitionHelper helper = helperObj.AddComponent<SceneTransitionHelper>();
+                helper.StartCoroutine(helper.Transition(targetName, fadeDuration));
             }
         }
     }
@@ -116,5 +131,72 @@ public class MapSelectionUI : MonoBehaviour
         {
             gameObject.SetActive(false);
         }
+    }
+}
+
+// ====================================================================================
+// [추가됨] 씬이 넘어가도 파괴되지 않고 페이드 아웃 -> 씬 로드 -> 페이드 인을 책임지는 헬퍼 클래스
+// ====================================================================================
+public class SceneTransitionHelper : MonoBehaviour
+{
+    public IEnumerator Transition(string targetScene, float fadeDuration)
+    {
+        // 헬퍼 자신을 파괴 불가 상태로 만듭니다.
+        DontDestroyOnLoad(gameObject);
+
+        // 1. 임시 검은 화면 캔버스 생성
+        Canvas fadeCanvas = gameObject.AddComponent<Canvas>();
+        fadeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        fadeCanvas.sortingOrder = 999; 
+
+        Image fadeImage = gameObject.AddComponent<Image>();
+        fadeImage.color = new Color(0, 0, 0, 0); 
+
+        // 2. 화면이 서서히 까매짐 (Fade Out)
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            fadeImage.color = new Color(0, 0, 0, elapsed / fadeDuration);
+            yield return null;
+        }
+        fadeImage.color = Color.black; 
+
+        // 3. 씬 로드
+        SceneManager.LoadScene(targetScene);
+        
+        // 씬이 완전히 불러와질 때까지 프레임 대기
+        yield return null;
+        yield return null; 
+
+        // 4. 새 씬에 있는 플레이어들의 조작을 끕니다.
+        MovingAst[] players = FindObjectsOfType<MovingAst>();
+        foreach(var p in players) 
+        {
+            if (p != null) p.enabled = false;
+        }
+
+        // 5. 튜토리얼 씬과 달리 행성 씬은 카메라 이동 대기(3.6초)가 필요 없으므로, 
+        // 씬 로드 직후 발생할 수 있는 렉이 진정되도록 0.5초만 짧게 대기합니다.
+        yield return new WaitForSeconds(0.5f);
+
+        // 6. 플레이어 조작 복구
+        players = FindObjectsOfType<MovingAst>();
+        foreach(var p in players) 
+        {
+            if (p != null) p.enabled = true;
+        }
+
+        // 7. 화면이 다시 밝아짐 (Fade In)
+        elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            fadeImage.color = new Color(0, 0, 0, 1f - (elapsed / fadeDuration));
+            yield return null;
+        }
+
+        // 8. 연출이 모두 끝났으므로 헬퍼 스스로 삭제
+        Destroy(gameObject);
     }
 }
