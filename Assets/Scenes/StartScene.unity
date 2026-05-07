@@ -438,6 +438,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1001 &108841670
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -716,6 +721,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &317537381
 GameObject:
   m_ObjectHideFlags: 0
@@ -923,7 +933,7 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: -1
+  m_RendererIndex: 0
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -984,6 +994,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!328 &330585551
 VideoPlayer:
   m_ObjectHideFlags: 0
@@ -1038,6 +1053,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &399399422 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1288793558353234, guid: 1818e1a170ef94c3aacee2ba50057521,
@@ -1198,6 +1218,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1329,6 +1354,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &522430962
 GameObject:
   m_ObjectHideFlags: 0
@@ -1725,6 +1755,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &652139559
 GameObject:
   m_ObjectHideFlags: 0
@@ -1784,6 +1819,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &712411530 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1647581975099426, guid: 835acc1a9ebe24c0fa3854c99346f9cd,
@@ -1944,6 +1984,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &748320028 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -6689036041284674117, guid: a934b5707f4ea5a47835ded6fb8e9c9c,
@@ -2126,6 +2171,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1001 &839029632
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2560,6 +2610,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1001 &1499542559
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3076,6 +3131,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &1907958311 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1526814149960808, guid: 7e4bfb3c6ba1d4bc4ba31d585abdae0f,
@@ -3236,6 +3296,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &1914574476 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1377197793697218, guid: b4201d402613a4464b35c805dafcca62,
@@ -3396,6 +3461,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85a79cf4e69144d9daf341992f7b7551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hiddenScenes:
+  - Saturn
+  - Jupiter
+  - Mars
+  - EarthScene
 --- !u!1 &1928958724
 GameObject:
   m_ObjectHideFlags: 0
