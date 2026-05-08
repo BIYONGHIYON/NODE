@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI; 
-using System.Collections; // 코루틴을 위해 추가됨
+using UnityEngine.Video; 
+using System.Collections; 
 
 public class MapSelectionUI : MonoBehaviour
 {
@@ -9,27 +10,54 @@ public class MapSelectionUI : MonoBehaviour
     public RectTransform[] planetNodes; 
     public RectTransform selectorCursor; 
     
+    [Header("Error UI Settings")]
+    public GameObject errorPopupUI; 
+
     [Header("Settings")]
     public float cursorMoveSpeed = 10f; 
     public Vector3 exitCursorOffset = new Vector3(0f, -15f, 0f); 
 
+    [Header("Progress Settings")]
+    [Tooltip("현재 진행도 (인스펙터의 값은 실행 시 GameData 값으로 덮어씌워집니다.)")]
+    public int currentProgress = 0; 
+    
+    [Tooltip("각 노드(행성)별 필요한 진행도 수치. planetNodes 배열과 순서/개수를 맞춰주세요.")]
+    public int[] requiredProgress; 
+
     [Header("Fade Settings")]
-    public float fadeDuration = 1f; // 페이드 연출 시간
+    public float fadeDuration = 1f; 
 
     [Header("Scene Settings")]
     public string[] planetSceneNames; 
     
+    // ==========================================
+    // [수정됨] 배열을 없애고 단일 비디오 클립만 받도록 변경
+    [Header("Video Settings")]
+    [Tooltip("모든 행성 이동 시 재생할 공통 영상을 넣어주세요.")]
+    public VideoClip transitionVideo; 
+    // ==========================================
+
     [Header("System References")]
     public InteractionBox interactionBox; 
 
+    [Header("SFX Settings")]
+    public AudioSource sfxSource;
+    public AudioClip successSound; 
+    public AudioClip errorSound;   
+
     private int currentIndex = 0;
     private bool isTransitioning = false; 
+    private Coroutine errorCoroutine; 
 
     void OnEnable()
     {
+        currentProgress = GameData.currentProgress;
+
         isTransitioning = false;
         currentIndex = 0; 
         
+        if (errorPopupUI != null) errorPopupUI.SetActive(false);
+
         for (int i = 0; i < planetSceneNames.Length; i++)
         {
             if (planetSceneNames[i].ToLower() == "exit")
@@ -55,6 +83,16 @@ public class MapSelectionUI : MonoBehaviour
 
     void HandleInput()
     {
+        if (errorPopupUI != null && errorPopupUI.activeSelf)
+        {
+            if (Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.RightControl) || Input.GetKeyDown(KeyCode.RightAlt))
+            {
+                if (errorCoroutine != null) StopCoroutine(errorCoroutine);
+                errorPopupUI.SetActive(false);
+                return; 
+            }
+        }
+
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
             currentIndex--;
@@ -109,15 +147,52 @@ public class MapSelectionUI : MonoBehaviour
                 return; 
             }
 
-            if (!string.IsNullOrEmpty(targetName))
+            int required = 0;
+            if (requiredProgress != null && currentIndex < requiredProgress.Length)
             {
-                isTransitioning = true;
-                
-                // [핵심 변경됨] 씬을 즉시 로드하지 않고, 파괴되지 않는 헬퍼 오브젝트를 만들어 페이드 연출을 맡깁니다.
-                GameObject helperObj = new GameObject("TransitionHelper");
-                SceneTransitionHelper helper = helperObj.AddComponent<SceneTransitionHelper>();
-                helper.StartCoroutine(helper.Transition(targetName, fadeDuration));
+                required = requiredProgress[currentIndex];
             }
+
+            if (currentProgress >= required)
+            {
+                if (sfxSource != null && successSound != null)
+                {
+                    sfxSource.PlayOneShot(successSound);
+                }
+
+                if (!string.IsNullOrEmpty(targetName))
+                {
+                    isTransitioning = true;
+                    
+                    GameObject helperObj = new GameObject("TransitionHelper");
+                    SceneTransitionHelper helper = helperObj.AddComponent<SceneTransitionHelper>();
+                    
+                    // ==========================================
+                    // [수정됨] 공통으로 설정된 transitionVideo 하나만 전달합니다.
+                    helper.StartCoroutine(helper.Transition(targetName, fadeDuration, transitionVideo));
+                    // ==========================================
+                }
+            }
+            else
+            {
+                if (sfxSource != null && errorSound != null)
+                {
+                    sfxSource.PlayOneShot(errorSound);
+                }
+
+                if (errorCoroutine != null) StopCoroutine(errorCoroutine);
+                errorCoroutine = StartCoroutine(ShowErrorPopup());
+            }
+        }
+    }
+
+    private IEnumerator ShowErrorPopup()
+    {
+        if (errorPopupUI != null)
+        {
+            errorPopupUI.SetActive(true);
+            yield return new WaitForSeconds(2f);
+            errorPopupUI.SetActive(false);
         }
     }
 
@@ -134,17 +209,12 @@ public class MapSelectionUI : MonoBehaviour
     }
 }
 
-// ====================================================================================
-// [추가됨] 씬이 넘어가도 파괴되지 않고 페이드 아웃 -> 씬 로드 -> 페이드 인을 책임지는 헬퍼 클래스
-// ====================================================================================
 public class SceneTransitionHelper : MonoBehaviour
 {
-    public IEnumerator Transition(string targetScene, float fadeDuration)
+    public IEnumerator Transition(string targetScene, float fadeDuration, VideoClip transitionVideo = null)
     {
-        // 헬퍼 자신을 파괴 불가 상태로 만듭니다.
         DontDestroyOnLoad(gameObject);
 
-        // 1. 임시 검은 화면 캔버스 생성
         Canvas fadeCanvas = gameObject.AddComponent<Canvas>();
         fadeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         fadeCanvas.sortingOrder = 999; 
@@ -152,7 +222,6 @@ public class SceneTransitionHelper : MonoBehaviour
         Image fadeImage = gameObject.AddComponent<Image>();
         fadeImage.color = new Color(0, 0, 0, 0); 
 
-        // 2. 화면이 서서히 까매짐 (Fade Out)
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -162,32 +231,68 @@ public class SceneTransitionHelper : MonoBehaviour
         }
         fadeImage.color = Color.black; 
 
-        // 3. 씬 로드
         SceneManager.LoadScene(targetScene);
         
-        // 씬이 완전히 불러와질 때까지 프레임 대기
         yield return null;
         yield return null; 
 
-        // 4. 새 씬에 있는 플레이어들의 조작을 끕니다.
         MovingAst[] players = FindObjectsOfType<MovingAst>();
         foreach(var p in players) 
         {
             if (p != null) p.enabled = false;
         }
 
-        // 5. 튜토리얼 씬과 달리 행성 씬은 카메라 이동 대기(3.6초)가 필요 없으므로, 
-        // 씬 로드 직후 발생할 수 있는 렉이 진정되도록 0.5초만 짧게 대기합니다.
-        yield return new WaitForSeconds(0.5f);
+        if (transitionVideo != null)
+        {
+            GameObject videoObj = new GameObject("VideoUI");
+            videoObj.transform.SetParent(fadeCanvas.transform, false);
+            
+            RawImage rawImage = videoObj.AddComponent<RawImage>();
+            rawImage.rectTransform.anchorMin = Vector2.zero;
+            rawImage.rectTransform.anchorMax = Vector2.one;
+            rawImage.rectTransform.sizeDelta = Vector2.zero;
+            rawImage.color = Color.clear; 
 
-        // 6. 플레이어 조작 복구
+            VideoPlayer vp = gameObject.AddComponent<VideoPlayer>();
+            vp.playOnAwake = false;
+            vp.clip = transitionVideo;
+            vp.renderMode = VideoRenderMode.RenderTexture;
+            vp.isLooping = false;
+
+            RenderTexture rt = new RenderTexture(Screen.width, Screen.height, 0);
+            vp.targetTexture = rt;
+            rawImage.texture = rt;
+
+            vp.Prepare();
+            while (!vp.isPrepared)
+            {
+                yield return null;
+            }
+
+            rawImage.color = Color.white; 
+            vp.Play();
+
+            yield return null;
+
+            while (vp.isPlaying)
+            {
+                yield return null;
+            }
+
+            Destroy(videoObj);
+            vp.targetTexture.Release();
+        }
+        else
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
         players = FindObjectsOfType<MovingAst>();
         foreach(var p in players) 
         {
             if (p != null) p.enabled = true;
         }
 
-        // 7. 화면이 다시 밝아짐 (Fade In)
         elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -196,7 +301,6 @@ public class SceneTransitionHelper : MonoBehaviour
             yield return null;
         }
 
-        // 8. 연출이 모두 끝났으므로 헬퍼 스스로 삭제
         Destroy(gameObject);
     }
 }

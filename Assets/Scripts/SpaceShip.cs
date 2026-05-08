@@ -3,12 +3,11 @@ using UnityEngine;
 public class SpaceShip : MonoBehaviour
 {
     [Header("References")]
-    // 인스펙터에서 메인 카메라를 여기에 드래그해서 넣으세요.
+    [Tooltip("비워두셔도 시작 시 자동으로 메인 카메라를 찾습니다.")]
     public TitleCameraSetup cameraSetup; 
 
     [Header("Position Settings")]
     public Vector3[] shipPositions; 
-
 
     private Vector3 startPosition; 
     private Quaternion startRotation;
@@ -16,6 +15,14 @@ public class SpaceShip : MonoBehaviour
 
     void Start()
     {
+        // ==========================================
+        // [핵심 추가] 씬이 바뀌어 인스펙터 참조가 끊겼거나 비어있을 경우 자동으로 찾아옵니다.
+        if (cameraSetup == null && Camera.main != null)
+        {
+            cameraSetup = Camera.main.GetComponent<TitleCameraSetup>();
+        }
+        // ==========================================
+
         startRotation = transform.rotation;
         UpdateShipPosition(); // 시작할 때 한 번 위치 설정
     }

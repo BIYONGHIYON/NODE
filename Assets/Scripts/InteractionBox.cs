@@ -8,7 +8,6 @@ public class InteractionBox : MonoBehaviour
     public GameObject uiCanvas; 
     public Transform cameraUiView; 
     
-    // [추가됨] 인스펙터에서 직접 카메라 셋업 스크립트를 끌어다 넣을 수 있게 public으로 변경합니다.
     public TutorialCameraSetup cameraSetup; 
 
     [Header("Settings")]
@@ -16,6 +15,13 @@ public class InteractionBox : MonoBehaviour
     public KeyCode interactKeyP1 = KeyCode.F;
     public KeyCode interactKeyP2_1 = KeyCode.RightControl;
     public KeyCode interactKeyP2_2 = KeyCode.RightAlt;
+
+    // ==========================================
+    // [추가됨] 카메라 이동 효과음 설정
+    [Header("SFX Settings")]
+    public AudioSource sfxSource;
+    public AudioClip cameraMoveSound;
+    // ==========================================
 
     private bool isPlayerInZone = false;
     private bool isInteracting = false;
@@ -31,13 +37,11 @@ public class InteractionBox : MonoBehaviour
     {
         mainCam = Camera.main;
         
-        // 인스펙터에서 수동으로 넣지 않았다면 메인 카메라에서 찾아봅니다.
         if (cameraSetup == null && mainCam != null)
         {
             cameraSetup = mainCam.GetComponent<TutorialCameraSetup>();
         }
 
-        // 못 찾았을 경우 콘솔창에 경고를 띄워 알려줍니다.
         if (cameraSetup == null)
         {
             Debug.LogWarning("[InteractionBox] TutorialCameraSetup을 찾을 수 없습니다! 인스펙터 창에서 직접 연결해 주세요.");
@@ -87,7 +91,6 @@ public class InteractionBox : MonoBehaviour
 
         SetPlayersMovement(false);
 
-        // 3. 기존 카메라 트래킹 중지 (이제 확실하게 꺼집니다!)
         if (cameraSetup != null) 
         {
             cameraSetup.enabled = false;
@@ -104,6 +107,14 @@ public class InteractionBox : MonoBehaviour
 
     private IEnumerator MoveCameraAndShowUI()
     {
+        // ==========================================
+        // [추가됨] UI로 카메라가 이동하기 시작할 때 효과음 재생
+        if (sfxSource != null && cameraMoveSound != null)
+        {
+            sfxSource.PlayOneShot(cameraMoveSound);
+        }
+        // ==========================================
+
         originalCamPos = mainCam.transform.position;
         originalCamRot = mainCam.transform.rotation;
 
@@ -128,6 +139,14 @@ public class InteractionBox : MonoBehaviour
 
     private IEnumerator ReturnCameraAndResume()
     {
+        // ==========================================
+        // [추가됨] 원래 위치로 카메라가 돌아가기 시작할 때 효과음 재생
+        if (sfxSource != null && cameraMoveSound != null)
+        {
+            sfxSource.PlayOneShot(cameraMoveSound);
+        }
+        // ==========================================
+
         Vector3 currentPos = mainCam.transform.position;
         Quaternion currentRot = mainCam.transform.rotation;
 
@@ -144,7 +163,6 @@ public class InteractionBox : MonoBehaviour
         mainCam.transform.position = originalCamPos;
         mainCam.transform.rotation = originalCamRot;
 
-        // 1. 카메라 트래킹 스크립트 다시 켜기
         if (cameraSetup != null) 
         {
             cameraSetup.enabled = true;

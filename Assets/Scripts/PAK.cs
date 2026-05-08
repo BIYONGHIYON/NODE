@@ -16,7 +16,11 @@ public class PAK : MonoBehaviour
     
     [Header("Video & UI Settings")]
     public VideoPlayer introVideo; 
-    public GameObject titleImage; // [추가됨] 타이틀 이미지 오브젝트를 껐다 켤 변수
+    public GameObject titleImage; 
+
+    [Header("SFX Settings")]
+    public AudioSource sfxSource;
+    public AudioClip cameraMoveSound;
 
     private TextMeshProUGUI textMeshPro;
     private bool isStarting = false;
@@ -26,50 +30,61 @@ public class PAK : MonoBehaviour
     private Quaternion startRotation;
     private float elapsedTime = 0f;
 
+    // 기존 PAK.cs의 Start() 함수 내부만 이렇게 수정해 주세요.
     void Start()
     {
         textMeshPro = GetComponent<TextMeshProUGUI>();
         camTransform = Camera.main.transform;
 
-        // 게임이 시작될 때 영상이 켜져 있다면, 텍스트와 타이틀 이미지를 모두 숨겨둡니다.
+        // [추가된 부분] 씬이 이동하면서 VideoPlayer 참조가 끊겼다면 유지되고 있는 메인 카메라에서 직접 찾습니다.
+        if (introVideo == null && Camera.main != null)
+        {
+            introVideo = Camera.main.GetComponent<VideoPlayer>();
+        }
+
         if (introVideo != null && introVideo.enabled)
         {
             if (textMeshPro != null) textMeshPro.enabled = false;
-            if (titleImage != null) titleImage.SetActive(false); // 타이틀 숨기기
+            if (titleImage != null) titleImage.SetActive(false); 
         }
     }
 
     void Update()
     {
-        // 비디오가 재생 중이면 아래 코드는 무시하고 대기합니다.
         if (introVideo != null && introVideo.enabled)
         {
             return;
         }
 
-        // 비디오가 끝났는데 UI가 아직 꺼져 있다면 다시 화면에 켭니다.
         if (textMeshPro != null && !textMeshPro.enabled && !isStarting)
         {
             textMeshPro.enabled = true;
-            if (titleImage != null) titleImage.SetActive(true); // 타이틀 다시 켜기
+            if (titleImage != null) titleImage.SetActive(true); 
         }
 
-        // 텍스트 깜빡임 로직
         if (textMeshPro != null && !isStarting)
         {
             Color color = textMeshPro.color;
             float maxAlphaRange = 1f + (holdTime * blinkSpeed / 2f);
+            
+            // Time.unscaledTime을 사용하므로 일시 정지(timeScale = 0) 상태에서도 텍스트는 정상적으로 깜빡입니다.
             float pingPongValue = Mathf.PingPong(Time.unscaledTime * blinkSpeed, maxAlphaRange);
             color.a = Mathf.Clamp01(pingPongValue);
             textMeshPro.color = color;
         }
 
-        // 아무 키나 누르면 이동 시작
-        if (Input.anyKeyDown && !isStarting)
+        // ==========================================
+        // [수정됨] Time.timeScale > 0f 조건을 추가하여, 메뉴가 켜져서 시간이 멈춘 상태에서는 입력을 완전히 무시합니다.
+        if (Input.anyKeyDown && !Input.GetKeyDown(KeyCode.Escape) && !isStarting && Time.timeScale > 0f)
         {
+        // ==========================================
             isStarting = true;
+
+            if (sfxSource != null && cameraMoveSound != null)
+            {
+                sfxSource.PlayOneShot(cameraMoveSound);
+            }
             
-            // 씬 이동을 시작할 때 깔끔하게 보이도록 UI를 모두 끕니다.
             if (textMeshPro != null) textMeshPro.enabled = false;
             if (titleImage != null) titleImage.SetActive(false);
             
@@ -83,7 +98,6 @@ public class PAK : MonoBehaviour
             startRotation = camTransform.rotation;
         }
 
-        // 카메라 부드러운 이동 로직
         if (isStarting)
         {
             elapsedTime += Time.deltaTime; 

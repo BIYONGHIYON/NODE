@@ -4,8 +4,15 @@ using UnityEngine;
 public class TutorialCameraSetup : MonoBehaviour
 {
     [Header("References")]
-    // [추가됨] 분리된 범용 매니저 스크립트를 연결할 변수
+    // 분리된 범용 매니저 스크립트를 연결할 변수
     public CoopPlayerManager playerManager; 
+
+    // ==========================================
+    // [추가됨] 효과음 설정 변수
+    [Header("SFX Settings")]
+    public AudioSource sfxSource;
+    public AudioClip cameraMoveSound;
+    // ==========================================
 
     [Header("Camera Settings")]
     public Vector3 targetRotation = new Vector3(15f, 70f, 0f);
@@ -76,6 +83,14 @@ public class TutorialCameraSetup : MonoBehaviour
 
     IEnumerator SmoothTransition(Transform camTransform, Vector3 endPos, Vector3 endRotEuler)
     {
+        // ==========================================
+        // [추가됨] 카메라 이동 연출 시작과 동시에 효과음 재생
+        if (sfxSource != null && cameraMoveSound != null)
+        {
+            sfxSource.PlayOneShot(cameraMoveSound);
+        }
+        // ==========================================
+
         Vector3 startPos = camTransform.position;
         Quaternion startRot = camTransform.rotation;
         

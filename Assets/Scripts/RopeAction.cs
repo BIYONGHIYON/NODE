@@ -17,7 +17,13 @@ public class RopeAction : MonoBehaviour
     // =========================================================================
     [Header("로프 비주얼 설정")]
     [Tooltip("캐릭터에 붙어있는 후크 오브젝트를 직접 끌어다 넣으세요.")]
-    public GameObject hookObject; // 프리팹 대신 씬에 있는 실제 오브젝트를 받습니다.
+    public GameObject hookObject; 
+
+    // =========================================================================
+    // [추가됨] 로프 연결 효과음 설정 변수
+    [Header("로프 사운드 설정")]
+    public AudioSource ropeSfxSource;
+    public AudioClip ropeConnectSound;
     // =========================================================================
 
     [Header("로프 설정")]
@@ -48,7 +54,6 @@ public class RopeAction : MonoBehaviour
         sj.damper = 0f;
         sj.autoConfigureConnectedAnchor = false;
 
-        // [추가됨] 게임이 시작되면 후크 오브젝트를 바로 숨깁니다.
         if (hookObject != null)
         {
             hookObject.SetActive(false);
@@ -128,12 +133,10 @@ public class RopeAction : MonoBehaviour
         lr.enabled = true;
         lr.positionCount = 2;
 
-        // [추가됨] 로프를 쏘는 순간 숨겨뒀던 후크를 보이게 켭니다.
         if (hookObject != null)
         {
             hookObject.SetActive(true);
             hookObject.transform.position = ropeLaunchPoint.position;
-            // 날아가는 동안 플레이어의 움직임에 영향받지 않도록 부모 관계를 잠시 끊습니다.
             hookObject.transform.SetParent(null); 
         }
 
@@ -180,6 +183,14 @@ public class RopeAction : MonoBehaviour
         isRoped = true;
         isTying = true;
         if (anim != null) anim.SetBool("isTying", isTying);
+
+        // ==========================================
+        // [추가됨] 로프가 대상에 닿아 고정되는 순간 효과음 재생
+        if (ropeSfxSource != null && ropeConnectSound != null)
+        {
+            ropeSfxSource.PlayOneShot(ropeConnectSound);
+        }
+        // ==========================================
 
         sj.anchor = transform.InverseTransformPoint(ropeLaunchPoint.position); 
 
@@ -265,15 +276,12 @@ public class RopeAction : MonoBehaviour
             yield return null;
         }
 
-        // [추가됨] 회수 애니메이션 완료 후 후크 처리
         if (hookObject != null)
         {
-            // 다시 내 캐릭터의 발사 지점 자식으로 복귀시킵니다.
             hookObject.transform.SetParent(ropeLaunchPoint);
             hookObject.transform.localPosition = Vector3.zero;
             hookObject.transform.localRotation = Quaternion.identity;
             
-            // 다시 안 보이게 숨깁니다.
             hookObject.SetActive(false);
         }
 

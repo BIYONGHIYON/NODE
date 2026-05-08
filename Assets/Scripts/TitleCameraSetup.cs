@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Video; // [추가됨] 비디오 제어를 위해 필요합니다.
+using UnityEngine.SceneManagement; // 씬 관리 추가
+using UnityEngine.Video;
 
 public class TitleCameraSetup : MonoBehaviour
 {
@@ -9,8 +10,9 @@ public class TitleCameraSetup : MonoBehaviour
     public int currentProgress = 0; 
     public Vector3[] viewPositions;
     public float[] phase1XRotations; 
+    
+    private Quaternion initialRotation; // 카메라의 초기 회전값 저장용
 
-    // 안전하게 값을 가져오기 위한 함수
     public float GetPhase1XRotation()
     {
         if (phase1XRotations != null && phase1XRotations.Length > 0)
@@ -18,40 +20,94 @@ public class TitleCameraSetup : MonoBehaviour
             int index = Mathf.Clamp(currentProgress, 0, phase1XRotations.Length - 1);
             return phase1XRotations[index];
         }
-        return -90f; // 기본값
+        return -90f;
     }
+
     [Header("Video Setup")]
-    public VideoPlayer videoPlayer; // 인스펙터에서 비디오 플레이어를 연결할 변수
+    public VideoPlayer videoPlayer;
+
+    [Header("Audio Setup")]
+    public AudioSource bgmSource;
+
+    void Awake()
+    {
+        // 1. 가장 처음 StartScene일 때 카메라의 기본 회전값을 기억해둡니다. (PAK 씬 이동 시 회전이 틀어지는 것 방지)
+        initialRotation = transform.rotation;
+        
+        // 2. 씬이 로드될 때마다 실행할 함수를 등록합니다.
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        // 스크립트가 파괴될 때 이벤트 구독을 해제합니다.
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
 
     void Start()
     {
-        // 1. 기존 카메라 위치 설정 로직
+        // Awake - OnSceneLoaded가 최초 1회 꼬일 경우를 대비한 안전장치
+        if (SceneManager.GetActiveScene().name == "StartScene")
+        {
+            SetupCameraPosition();
+            PlayIntroVideo();
+        }
+    }
+
+    // 씬이 변경될 때마다 이 함수가 자동으로 호출됩니다.
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "TitleScene")
+        {
+            // 메뉴를 통해 TitleScene으로 돌아왔을 때의 처리
+            SetupCameraPosition();
+            SkipIntroVideo();
+        }
+    }
+
+    void SetupCameraPosition()
+    {
+        currentProgress = GameData.currentProgress;
+
         if (viewPositions.Length > 0)
         {
             if (currentProgress >= viewPositions.Length)
             {
                 currentProgress = viewPositions.Length - 1;
             }
+            
+            // 카메라 위치와 회전값을 무조건 타이틀 화면 상태로 원상복구 시킵니다.
             transform.position = viewPositions[currentProgress];
+            transform.rotation = initialRotation; 
         }
+    }
 
-        // 2. 비디오 플레이어 초기화 로직
-        if (videoPlayer == null)
-        {
-            videoPlayer = GetComponent<VideoPlayer>();
-        }
-        
-        // 영상 재생이 끝났을 때 이벤트를 연결합니다.
+    void PlayIntroVideo()
+    {
+        if (videoPlayer == null) videoPlayer = GetComponent<VideoPlayer>();
+
         if (videoPlayer != null)
         {
+            videoPlayer.enabled = true;
             videoPlayer.loopPointReached += OnVideoEnd;
+            videoPlayer.Play(); 
         }
+    }
+
+    void SkipIntroVideo()
+    {
+        if (videoPlayer == null) videoPlayer = GetComponent<VideoPlayer>();
+
+        if (videoPlayer != null)
+        {
+            videoPlayer.enabled = false;
+        }
+        PlayBGM(); // 영상 없이 바로 BGM 재생
     }
 
     void Update()
     {
-        // 비디오 플레이어가 켜져 있을 때만 스킵 키(엔터, ESC)를 감지합니다.
-        if (videoPlayer != null && videoPlayer.enabled)
+        if (videoPlayer != null && videoPlayer.enabled && videoPlayer.isPlaying)
         {
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Escape))
             {
@@ -60,23 +116,28 @@ public class TitleCameraSetup : MonoBehaviour
         }
     }
 
-    // 영상이 자연스럽게 다 끝났을 때 호출됩니다.
     void OnVideoEnd(VideoPlayer vp)
     {
         StopVideo();
     }
 
-    // 영상을 강제로 끄고 게임 화면을 보여주는 핵심 로직입니다.
     void StopVideo()
     {
         if (videoPlayer != null && videoPlayer.enabled)
         {
-            // 메모리 누수 방지를 위해 이벤트 연결을 해제하고 영상을 정지합니다.
             videoPlayer.loopPointReached -= OnVideoEnd;
             videoPlayer.Stop();
-
-            // 비디오 플레이어 컴포넌트를 꺼서 카메라 앞을 가리던 영상을 치웁니다.
             videoPlayer.enabled = false;
+        }
+
+        PlayBGM();
+    }
+
+    void PlayBGM()
+    {
+        if (bgmSource != null && !bgmSource.isPlaying)
+        {
+            bgmSource.Play();
         }
     }
 }

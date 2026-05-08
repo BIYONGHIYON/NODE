@@ -25,6 +25,14 @@ public class CoopPlayerManager : MonoBehaviour
 
     void Update()
     {
+        // [핵심 추가] 씬 전환 등의 이유로 Awake에서 찾았던 카메라가 파괴되거나 놓쳐버렸다면, 
+        // 다시 현재 씬의 진짜 메인 카메라를 찾아옵니다.
+        if (mainCam == null || !mainCam.gameObject.activeInHierarchy)
+        {
+            mainCam = Camera.main;
+        }
+
+        // mainCam이 정상적으로 존재할 때만 추적을 실행합니다.
         if (isTracking && character1 != null && character2 != null && mainCam != null)
         {
             float centerX = (character1.position.x + character2.position.x) / 2f;

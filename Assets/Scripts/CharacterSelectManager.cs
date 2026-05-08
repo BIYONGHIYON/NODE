@@ -4,10 +4,10 @@ using UnityEngine.SceneManagement;
 
 public class CharacterSelectManager : MonoBehaviour
 {
-    // [추가됨] Center 상태가 추가되었습니다.
     public enum CharacterType { Center, LeftCharacter, RightCharacter }
+    
     [Header("Player 1 Settings")]
-    public CharacterType p1Choice = CharacterType.Center; // 시작은 중앙에서
+    public CharacterType p1Choice = CharacterType.Center; 
     public bool p1Ready = false;
     private bool p1HasMoved = false; 
 
@@ -17,7 +17,7 @@ public class CharacterSelectManager : MonoBehaviour
     public Sprite p1ReadySprite;   
 
     [Header("Player 2 Settings")]
-    public CharacterType p2Choice = CharacterType.Center; // 시작은 중앙에서
+    public CharacterType p2Choice = CharacterType.Center; 
     public bool p2Ready = false;
     private bool p2HasMoved = false; 
 
@@ -27,7 +27,7 @@ public class CharacterSelectManager : MonoBehaviour
     public Sprite p2ReadySprite;   
 
     [Header("UI Positions (X 좌표)")]
-    public float centerX = 0f;            // [추가됨] 중앙 대기 좌표
+    public float centerX = 0f;            
     public float leftCharacterX = -300f;  
     public float rightCharacterX = 300f;  
     public float moveSpeed = 15f;         
@@ -35,9 +35,16 @@ public class CharacterSelectManager : MonoBehaviour
     [Header("Scene Transition")]
     public string nextSceneName = "GameScene"; 
 
+    // ==========================================
+    // [추가됨] 효과음 설정 변수
+    [Header("Audio Settings")]
+    public AudioSource sfxSource;
+    public AudioClip readySound;
+    // ==========================================
+
     void Start()
     {
-            UpdateCardSprites();
+        UpdateCardSprites();
     }
 
     void Update()
@@ -68,21 +75,19 @@ public class CharacterSelectManager : MonoBehaviour
         {
             if (!p1Ready)
             {
-                // [핵심 로직] 중앙이 아닐 때만 레디 가능
                 if (p1Choice != CharacterType.Center) 
                 {
-                    // 상대방이 나와 같은 곳에 있고, '이미 레디를 박았다면' 나는 레디 불가 (선착순)
                     bool isBlockedByP2 = (p1Choice == p2Choice && p2Ready);
                     
                     if (!isBlockedByP2) 
                     {
                         p1Ready = true;
+                        PlayReadySound(); // [추가됨] 레디 성공 시 사운드 재생
                     }
                 }
             }
             else
             {
-                // 이미 레디 상태라면 언제든 취소 가능
                 p1Ready = false;
             }
             UpdateCardSprites();
@@ -108,18 +113,18 @@ public class CharacterSelectManager : MonoBehaviour
             }
         }
         
-        if (Input.GetKeyDown(KeyCode.RightControl)||Input.GetKeyDown(KeyCode.RightAlt))
+        if (Input.GetKeyDown(KeyCode.RightControl) || Input.GetKeyDown(KeyCode.RightAlt))
         {
             if (!p2Ready)
             {
                 if (p2Choice != CharacterType.Center) 
                 {
-                    // 상대방(P1)이 나와 같은 곳에서 이미 레디를 했다면 차단
                     bool isBlockedByP1 = (p2Choice == p1Choice && p1Ready);
 
                     if (!isBlockedByP1) 
                     {
                         p2Ready = true;
+                        PlayReadySound(); // [추가됨] 레디 성공 시 사운드 재생
                     }
                 }
             }
@@ -136,7 +141,6 @@ public class CharacterSelectManager : MonoBehaviour
     {
         if (p1CardImage != null)
         {
-            // Center면 centerX(0), Left면 좌측 좌표, Right면 우측 좌표 할당
             float p1TargetX = centerX;
             if (p1Choice == CharacterType.LeftCharacter) p1TargetX = leftCharacterX;
             else if (p1Choice == CharacterType.RightCharacter) p1TargetX = rightCharacterX;
@@ -179,11 +183,19 @@ public class CharacterSelectManager : MonoBehaviour
     {
         if (p1Ready && p2Ready)
         {
-            // 씬을 넘기기 직전에 Static 변수에 플레이어들의 선택을 저장합니다.
             GameData.p1SelectedChar = (int)p1Choice;
             GameData.p2SelectedChar = (int)p2Choice;
 
             SceneManager.LoadScene(nextSceneName);
+        }
+    }
+
+    // [추가됨] 효과음을 재생하는 헬퍼 함수
+    void PlayReadySound()
+    {
+        if (sfxSource != null && readySound != null)
+        {
+            sfxSource.PlayOneShot(readySound);
         }
     }
 }

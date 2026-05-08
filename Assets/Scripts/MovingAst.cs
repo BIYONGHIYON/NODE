@@ -17,9 +17,20 @@ public class MovingAst : MonoBehaviour
     public KeyCode leftKey;
     public KeyCode rightKey;
 
+    [Header("SFX Settings")]
+    public AudioSource moveSfxSource;
+    public float resumeTimeWindow = 0.5f; 
+    
+    // ==========================================
+    // [추가됨] 페이드 아웃 속도를 조절하는 변수
+    public float audioFadeSpeed = 10f; 
+    private float originalVolume = 1f; // 에디터에서 설정한 원래 볼륨값을 저장할 변수
+    // ==========================================
+
+    private float lastStopTime = -100f; 
+
     private float currentIdleTime = 0f; 
     
-    // Update에서 입력받은 값을 FixedUpdate로 전달하기 위한 변수
     private float inputMoveX = 0f;
     private float inputMoveY = 0f;
     private bool isMoving = false;
@@ -33,11 +44,17 @@ public class MovingAst : MonoBehaviour
         {
             Debug.LogError("애니메이터를 찾을 수 없습니다! 구조를 확인해 주세요.");
         }
+
+        // [추가됨] 시작할 때 인스펙터에 설정된 기본 볼륨을 기억해 둡니다.
+        if (moveSfxSource != null)
+        {
+            originalVolume = moveSfxSource.volume;
+            moveSfxSource.volume = 0f; // 처음엔 소리가 나지 않도록 0으로 둡니다.
+        }
     }
 
     void Update()
     {
-        // 1. 매 프레임 입력값 갱신 (누락 방지)
         inputMoveX = 0f;
         inputMoveY = 0f;
 
@@ -49,7 +66,6 @@ public class MovingAst : MonoBehaviour
         Vector3 moveDirection = new Vector3(inputMoveX, inputMoveY, 0).normalized;
         isMoving = moveDirection != Vector3.zero;
 
-        // 2. 애니메이션 상태 업데이트
         if (anim != null)
         {
             anim.SetBool("isMoving", isMoving);
@@ -58,6 +74,43 @@ public class MovingAst : MonoBehaviour
                 anim.SetBool("isTying", false);
             }
         }
+
+        // ==========================================
+        // [수정됨] 볼륨 페이드 인/아웃 효과음 로직
+        if (moveSfxSource != null)
+        {
+            if (isMoving)
+            {
+                if (!moveSfxSource.isPlaying)
+                {
+                    if (Time.time - lastStopTime > resumeTimeWindow)
+                    {
+                        moveSfxSource.time = 0f;
+                    }
+                    moveSfxSource.Play();
+                }
+                
+                // 움직이는 동안에는 볼륨을 서서히 원래 크기로 부드럽게 올립니다. (페이드 인)
+                moveSfxSource.volume = Mathf.Lerp(moveSfxSource.volume, originalVolume, Time.deltaTime * audioFadeSpeed);
+            }
+            else
+            {
+                if (moveSfxSource.isPlaying)
+                {
+                    // 키보드에서 손을 떼면 볼륨을 서서히 0으로 줄입니다. (페이드 아웃)
+                    moveSfxSource.volume = Mathf.Lerp(moveSfxSource.volume, 0f, Time.deltaTime * audioFadeSpeed);
+                    
+                    // 볼륨이 거의 안 들릴 정도로 작아지면 비로소 일시 정지시킵니다.
+                    if (moveSfxSource.volume <= 0.05f)
+                    {
+                        moveSfxSource.volume = 0f;
+                        moveSfxSource.Pause();
+                        lastStopTime = Time.time;
+                    }
+                }
+            }
+        }
+        // ==========================================
     }
 
     void FixedUpdate()
@@ -68,10 +121,8 @@ public class MovingAst : MonoBehaviour
         {
             currentIdleTime = 0f;
 
-            // 1. 이동 (힘 가하기)
             rb.AddForce(moveDirection * thrust);
 
-            // 2. 회전 로직
             Vector3 lookDirection = moveDirection;
 
             if (inputMoveX == 0f && inputMoveY != 0f)
