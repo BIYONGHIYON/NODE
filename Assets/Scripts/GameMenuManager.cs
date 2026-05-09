@@ -95,7 +95,6 @@ public class GameMenuManager : MonoBehaviour
         transform.SetParent(null); 
         DontDestroyOnLoad(gameObject);
 
-        // StartScene이 아닌 TitleScene으로 이동
         StartCoroutine(FadeOutAndLoad("TitleScene"));
     }
 
@@ -115,10 +114,7 @@ public class GameMenuManager : MonoBehaviour
         Debug.Log("게임 종료!");
         Application.Quit(); 
     }
-    // ==========================================
-
-    // ==========================================
-    // 볼륨 조절 및 저장 로직 (생략 없이 동일 유지)
+    // 볼륨 조절 및 저장 로직
     public void SetBGMVolume(float volume) 
     {
         if (mainMixer != null) mainMixer.SetFloat("BGMVolume", Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20);
@@ -145,10 +141,7 @@ public class GameMenuManager : MonoBehaviour
         SetBGMVolume(savedBGM);
         SetSFXVolume(savedSFX);
     }
-    // ==========================================
 
-    // ==========================================
-    // 페이드 아웃 및 카메라 문제 해결 코루틴
     private IEnumerator FadeOutAndLoad(string targetSceneName)
     {
         Time.timeScale = 1f; 
@@ -191,7 +184,6 @@ public class GameMenuManager : MonoBehaviour
         yield return null;
         yield return null;
 
-        // 카메라 중복 제거 로직도 TitleScene으로 이동했을 때 적용되도록 변경
         if (targetSceneName == "TitleScene" && persistentCam != null)
         {
             Camera[] currentCameras = FindObjectsOfType<Camera>();

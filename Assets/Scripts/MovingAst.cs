@@ -45,11 +45,10 @@ public class MovingAst : MonoBehaviour
             Debug.LogError("애니메이터를 찾을 수 없습니다! 구조를 확인해 주세요.");
         }
 
-        // [추가됨] 시작할 때 인스펙터에 설정된 기본 볼륨을 기억해 둡니다.
         if (moveSfxSource != null)
         {
             originalVolume = moveSfxSource.volume;
-            moveSfxSource.volume = 0f; // 처음엔 소리가 나지 않도록 0으로 둡니다.
+            moveSfxSource.volume = 0f;
         }
     }
 
@@ -75,8 +74,6 @@ public class MovingAst : MonoBehaviour
             }
         }
 
-        // ==========================================
-        // [수정됨] 볼륨 페이드 인/아웃 효과음 로직
         if (moveSfxSource != null)
         {
             if (isMoving)
@@ -90,17 +87,14 @@ public class MovingAst : MonoBehaviour
                     moveSfxSource.Play();
                 }
                 
-                // 움직이는 동안에는 볼륨을 서서히 원래 크기로 부드럽게 올립니다. (페이드 인)
                 moveSfxSource.volume = Mathf.Lerp(moveSfxSource.volume, originalVolume, Time.deltaTime * audioFadeSpeed);
             }
             else
             {
                 if (moveSfxSource.isPlaying)
                 {
-                    // 키보드에서 손을 떼면 볼륨을 서서히 0으로 줄입니다. (페이드 아웃)
                     moveSfxSource.volume = Mathf.Lerp(moveSfxSource.volume, 0f, Time.deltaTime * audioFadeSpeed);
                     
-                    // 볼륨이 거의 안 들릴 정도로 작아지면 비로소 일시 정지시킵니다.
                     if (moveSfxSource.volume <= 0.05f)
                     {
                         moveSfxSource.volume = 0f;
@@ -110,7 +104,6 @@ public class MovingAst : MonoBehaviour
                 }
             }
         }
-        // ==========================================
     }
 
     void FixedUpdate()

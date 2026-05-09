@@ -12,7 +12,7 @@ public class SaturnManager : MonoBehaviour
     public float fadeDuration = 1f; 
 
     private Camera persistentCam;
-    private bool isTransitioning = false; // [추가됨] 버튼 중복 클릭 방지
+    private bool isTransitioning = false;
 
     void Start()
     {
@@ -30,12 +30,10 @@ public class SaturnManager : MonoBehaviour
 
     public void ReturnToTutorial()
     {
-        if (isTransitioning) return; // 이미 전환 중이면 무시
+        if (isTransitioning) return;
         isTransitioning = true;
 
-        // [핵심 해결 방법]
-        // 씬이 넘어가더라도 이 스크립트의 코루틴이 멈추지 않도록 매니저 자신을 파괴 방지 처리합니다.
-        transform.SetParent(null); // 최상위 오브젝트로 만들어야 DontDestroyOnLoad가 작동함
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
 
         StartCoroutine(FadeOutAndLoad());
@@ -54,7 +52,7 @@ public class SaturnManager : MonoBehaviour
         Image fadeImage = fadeObj.AddComponent<Image>();
         fadeImage.color = new Color(0, 0, 0, 0); 
 
-        // 2. 페이드 아웃 (화면 까매짐)
+        // 2. 페이드 아웃
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -72,24 +70,24 @@ public class SaturnManager : MonoBehaviour
         yield return null;
         yield return null;
 
-        // 5. 튜토리얼 씬의 캐릭터들을 찾아 조작을 끕니다.
+        // 5. 튜토리얼 씬의 캐릭터들을 찾아 조작 일시정지
         MovingAst[] players = FindObjectsOfType<MovingAst>();
         foreach(var p in players) 
         {
             if (p != null) p.enabled = false;
         }
 
-        // 6. TutorialCameraSetup의 백그라운드 카메라 연출(약 3.5초)이 끝날 때까지 넉넉히 대기
+        // 6. TutorialCameraSetup의 백그라운드 카메라 연출(약 3.5초)이 끝날 때까지 대기
         yield return new WaitForSeconds(3.6f);
 
-        // 7. 대기하는 동안 캐릭터 참조가 끊겼을 수 있으니 다시 찾아서 조작을 켭니다.
+        // 7. 대기하는 동안 캐릭터 찾아서 조작을 재개
         players = FindObjectsOfType<MovingAst>();
         foreach(var p in players) 
         {
             if (p != null) p.enabled = true;
         }
 
-        // 8. 페이드 인 (화면 밝아짐)
+        // 8. 페이드 인
         elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -101,7 +99,7 @@ public class SaturnManager : MonoBehaviour
         // 9. 연출이 끝났으니 임시 캔버스 파괴
         Destroy(fadeObj);
 
-        // 10. [핵심] 코루틴을 끝까지 돌려준 SaturnManager 자신도 이제 쓸모가 다했으므로 스스로 파괴
+        // 10. SaturnManager 파괴
         Destroy(gameObject);
     }
 }

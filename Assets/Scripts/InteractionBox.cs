@@ -16,12 +16,9 @@ public class InteractionBox : MonoBehaviour
     public KeyCode interactKeyP2_1 = KeyCode.RightControl;
     public KeyCode interactKeyP2_2 = KeyCode.RightAlt;
 
-    // ==========================================
-    // [추가됨] 카메라 이동 효과음 설정
     [Header("SFX Settings")]
     public AudioSource sfxSource;
     public AudioClip cameraMoveSound;
-    // ==========================================
 
     private bool isPlayerInZone = false;
     private bool isInteracting = false;
@@ -107,13 +104,11 @@ public class InteractionBox : MonoBehaviour
 
     private IEnumerator MoveCameraAndShowUI()
     {
-        // ==========================================
-        // [추가됨] UI로 카메라가 이동하기 시작할 때 효과음 재생
+
         if (sfxSource != null && cameraMoveSound != null)
         {
             sfxSource.PlayOneShot(cameraMoveSound);
         }
-        // ==========================================
 
         originalCamPos = mainCam.transform.position;
         originalCamRot = mainCam.transform.rotation;
@@ -139,13 +134,10 @@ public class InteractionBox : MonoBehaviour
 
     private IEnumerator ReturnCameraAndResume()
     {
-        // ==========================================
-        // [추가됨] 원래 위치로 카메라가 돌아가기 시작할 때 효과음 재생
         if (sfxSource != null && cameraMoveSound != null)
         {
             sfxSource.PlayOneShot(cameraMoveSound);
         }
-        // ==========================================
 
         Vector3 currentPos = mainCam.transform.position;
         Quaternion currentRot = mainCam.transform.rotation;

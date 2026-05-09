@@ -18,10 +18,8 @@ public class MapSelectionUI : MonoBehaviour
     public Vector3 exitCursorOffset = new Vector3(0f, -15f, 0f); 
 
     [Header("Progress Settings")]
-    [Tooltip("현재 진행도 (인스펙터의 값은 실행 시 GameData 값으로 덮어씌워집니다.)")]
     public int currentProgress = 0; 
     
-    [Tooltip("각 노드(행성)별 필요한 진행도 수치. planetNodes 배열과 순서/개수를 맞춰주세요.")]
     public int[] requiredProgress; 
 
     [Header("Fade Settings")]
@@ -30,12 +28,8 @@ public class MapSelectionUI : MonoBehaviour
     [Header("Scene Settings")]
     public string[] planetSceneNames; 
     
-    // ==========================================
-    // [수정됨] 배열을 없애고 단일 비디오 클립만 받도록 변경
     [Header("Video Settings")]
-    [Tooltip("모든 행성 이동 시 재생할 공통 영상을 넣어주세요.")]
     public VideoClip transitionVideo; 
-    // ==========================================
 
     [Header("System References")]
     public InteractionBox interactionBox; 
@@ -167,10 +161,7 @@ public class MapSelectionUI : MonoBehaviour
                     GameObject helperObj = new GameObject("TransitionHelper");
                     SceneTransitionHelper helper = helperObj.AddComponent<SceneTransitionHelper>();
                     
-                    // ==========================================
-                    // [수정됨] 공통으로 설정된 transitionVideo 하나만 전달합니다.
                     helper.StartCoroutine(helper.Transition(targetName, fadeDuration, transitionVideo));
-                    // ==========================================
                 }
             }
             else

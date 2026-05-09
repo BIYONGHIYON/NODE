@@ -12,6 +12,8 @@ public class TitleCameraSetup : MonoBehaviour
     public float[] phase1XRotations; 
     
     private Quaternion initialRotation; // 카메라의 초기 회전값 저장용
+    [Header("Scene Transition")]
+    public string nextSceneName = "TitleScene"; 
 
     public float GetPhase1XRotation()
     {
@@ -31,16 +33,16 @@ public class TitleCameraSetup : MonoBehaviour
 
     void Awake()
     {
-        // 1. 가장 처음 StartScene일 때 카메라의 기본 회전값을 기억해둡니다. (PAK 씬 이동 시 회전이 틀어지는 것 방지)
+        // StartScene일 때 카메라의 기본 회전값
         initialRotation = transform.rotation;
         
-        // 2. 씬이 로드될 때마다 실행할 함수를 등록합니다.
+        // 씬이 로드될 때마다 실행할 함수
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void OnDestroy()
     {
-        // 스크립트가 파괴될 때 이벤트 구독을 해제합니다.
+        // 스크립트가 파괴될 때 이벤트 해제
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
@@ -54,7 +56,7 @@ public class TitleCameraSetup : MonoBehaviour
         }
     }
 
-    // 씬이 변경될 때마다 이 함수가 자동으로 호출됩니다.
+    // 씬이 변경될 때마다 자동 호출
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == "TitleScene")
@@ -76,7 +78,7 @@ public class TitleCameraSetup : MonoBehaviour
                 currentProgress = viewPositions.Length - 1;
             }
             
-            // 카메라 위치와 회전값을 무조건 타이틀 화면 상태로 원상복구 시킵니다.
+            // 카메라 위치와 회전값을 무조건 타이틀 화면 상태로 원상복구
             transform.position = viewPositions[currentProgress];
             transform.rotation = initialRotation; 
         }
@@ -131,6 +133,11 @@ public class TitleCameraSetup : MonoBehaviour
         }
 
         PlayBGM();
+
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
     }
 
     void PlayBGM()

@@ -986,6 +986,7 @@ MonoBehaviour:
   - 85
   - 73
   - 73
+  nextSceneName: TitleScene
   videoPlayer: {fileID: 330585551}
   bgmSource: {fileID: 442279635}
 --- !u!114 &330585550
@@ -1404,7 +1405,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: f5904acf0b10446eab196a629134afbb, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.05
+  m_Volume: 0.1
   m_Pitch: 1
   Loop: 1
   Mute: 0

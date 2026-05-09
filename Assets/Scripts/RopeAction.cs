@@ -16,11 +16,8 @@ public class RopeAction : MonoBehaviour
 
     // =========================================================================
     [Header("로프 비주얼 설정")]
-    [Tooltip("캐릭터에 붙어있는 후크 오브젝트를 직접 끌어다 넣으세요.")]
     public GameObject hookObject; 
 
-    // =========================================================================
-    // [추가됨] 로프 연결 효과음 설정 변수
     [Header("로프 사운드 설정")]
     public AudioSource ropeSfxSource;
     public AudioClip ropeConnectSound;
@@ -184,13 +181,10 @@ public class RopeAction : MonoBehaviour
         isTying = true;
         if (anim != null) anim.SetBool("isTying", isTying);
 
-        // ==========================================
-        // [추가됨] 로프가 대상에 닿아 고정되는 순간 효과음 재생
         if (ropeSfxSource != null && ropeConnectSound != null)
         {
             ropeSfxSource.PlayOneShot(ropeConnectSound);
         }
-        // ==========================================
 
         sj.anchor = transform.InverseTransformPoint(ropeLaunchPoint.position); 
 

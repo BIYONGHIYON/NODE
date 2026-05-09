@@ -36,7 +36,6 @@ public class CharacterSelectManager : MonoBehaviour
     public string nextSceneName = "GameScene"; 
 
     // ==========================================
-    // [추가됨] 효과음 설정 변수
     [Header("Audio Settings")]
     public AudioSource sfxSource;
     public AudioClip readySound;
@@ -49,7 +48,7 @@ public class CharacterSelectManager : MonoBehaviour
 
     void Update()
     {
-        // 1. 카드 스무스 이동 (매 프레임)
+        // 1. 카드 스무스 이동
         MoveCardsSmoothly();
 
         // ==========================================
@@ -82,7 +81,7 @@ public class CharacterSelectManager : MonoBehaviour
                     if (!isBlockedByP2) 
                     {
                         p1Ready = true;
-                        PlayReadySound(); // [추가됨] 레디 성공 시 사운드 재생
+                        PlayReadySound();
                     }
                 }
             }
@@ -124,7 +123,7 @@ public class CharacterSelectManager : MonoBehaviour
                     if (!isBlockedByP1) 
                     {
                         p2Ready = true;
-                        PlayReadySound(); // [추가됨] 레디 성공 시 사운드 재생
+                        PlayReadySound();
                     }
                 }
             }

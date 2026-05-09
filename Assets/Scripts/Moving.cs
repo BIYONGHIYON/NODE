@@ -11,7 +11,6 @@ public class Moving : MonoBehaviour
     private Vector3 startPosition; 
     private Quaternion startRotation;
 
-    // Perlin Noise가 항상 같은 패턴을 내지 않도록 축마다 시작점을 다르게 줍니다.
     private float randomOffsetX;
     private float randomOffsetY;
     private float randomOffsetZ;

@@ -1,10 +1,9 @@
 using System.Collections;
 using UnityEngine;
-using TMPro; // TextMeshPro를 사용하기 위한 네임스페이스
+using TMPro;
 
 public class TutorialTextController : MonoBehaviour
 {
-    // [수정됨] TextMeshProUGUI (UI용) 대신 TextMeshPro (3D 오브젝트용)을 사용합니다.
     public TextMeshPro textMeshPro; 
     public float blinkSpeed = 2f;
     public float holdTime = 1f;
@@ -21,12 +20,10 @@ public class TutorialTextController : MonoBehaviour
     void Start()
     {
         if (textMeshPro == null)
-            textMeshPro = GetComponent<TextMeshPro>(); // [수정됨]
+            textMeshPro = GetComponent<TextMeshPro>();
 
-        // 1. 씬 시작 시, 과거에 튜토리얼을 깬 적이 있는지 검사합니다.
         if (PlayerPrefs.GetInt(saveKey, 0) == 1)
         {
-            // 이미 깬 적이 있다면 텍스트를 아예 끄고 로직을 종료합니다.
             gameObject.SetActive(false);
             return;
         }
@@ -34,7 +31,6 @@ public class TutorialTextController : MonoBehaviour
 
     void Update()
     {
-        // 2. 평소 깜빡임 로직
         if (textMeshPro != null && !isStarting && !isFadingOut)
         {
             Color color = textMeshPro.color;
@@ -45,7 +41,6 @@ public class TutorialTextController : MonoBehaviour
         }
     }
 
-    // 3. 두 플레이어가 Hook을 연결했을 때 실행될 함수
     public void OnBothHooksConnected()
     {
         if (!isFadingOut && gameObject.activeSelf)
@@ -54,7 +49,6 @@ public class TutorialTextController : MonoBehaviour
         }
     }
 
-    // 4. 서서히 사라지게 만들고 상태를 저장하는 코루틴
     private IEnumerator FadeOutAndSave()
     {
         isFadingOut = true; 
@@ -63,7 +57,6 @@ public class TutorialTextController : MonoBehaviour
         float startAlpha = startColor.a; 
         float time = 0f;
 
-        // 설정한 시간 동안 알파값을 0을 향해 부드럽게 깎아냅니다.
         while (time < fadeOutDuration)
         {
             time += Time.unscaledDeltaTime;
@@ -72,15 +65,12 @@ public class TutorialTextController : MonoBehaviour
             yield return null; 
         }
 
-        // 완전히 투명해지도록 0으로 고정
         startColor.a = 0f;
         textMeshPro.color = startColor;
 
-        // 5. 다음번 씬 입장 시 나타나지 않도록 기기에 저장합니다.
-        //PlayerPrefs.SetInt(saveKey, 1);
-        //PlayerPrefs.Save();
+        PlayerPrefs.SetInt(saveKey, 1);
+        PlayerPrefs.Save();
 
-        // 텍스트 오브젝트 자체를 깔끔하게 비활성화
         gameObject.SetActive(false);
     }
 }

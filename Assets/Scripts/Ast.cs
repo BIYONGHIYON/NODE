@@ -33,7 +33,6 @@ public class Ast : MonoBehaviour
         randomOffsetY = Random.Range(0f, 100f);
         randomOffsetZ = Random.Range(0f, 100f);
 
-        // 첫 프레임에 튈 노이즈 값을 미리 계산해 둡니다.
         initialNoiseX = (Mathf.PerlinNoise(randomOffsetX, 0f) * 2f - 1f) * moveRange;
         initialNoiseY = (Mathf.PerlinNoise(0f, randomOffsetY) * 2f - 1f) * moveRange;
         initialNoiseZ = (Mathf.PerlinNoise(randomOffsetZ, randomOffsetZ) * 2f - 1f) * moveRange;
@@ -49,7 +48,6 @@ public class Ast : MonoBehaviour
         float noiseY = (Mathf.PerlinNoise(0f, Time.time * moveSpeed + randomOffsetY) * 2f - 1f) * moveRange;
         float noiseZ = (Mathf.PerlinNoise(Time.time * moveSpeed + randomOffsetZ, Time.time * moveSpeed + randomOffsetZ) * 2f - 1f) * moveRange;
 
-        // 현재 노이즈에서 시작 노이즈를 빼주어 첫 프레임 이동량이 0이 되도록 만듭니다.
         float finalX = noiseX - initialNoiseX;
         float finalY = noiseY - initialNoiseY;
         float finalZ = noiseZ - initialNoiseZ;

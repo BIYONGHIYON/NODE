@@ -1,10 +1,9 @@
 using System.Collections;
 using UnityEngine;
-using TMPro; // TextMeshPro를 사용하기 위한 네임스페이스
+using TMPro;
 
 public class press1 : MonoBehaviour
 {
-    // [수정됨] TextMeshProUGUI (UI용) 대신 TextMeshPro (3D 오브젝트용)을 사용합니다.
     public TextMeshPro textMeshPro; 
     public float blinkSpeed = 2f;
     public float holdTime = 1f;
@@ -18,7 +17,7 @@ public class press1 : MonoBehaviour
     void Start()
     {
         if (textMeshPro == null)
-            textMeshPro = GetComponent<TextMeshPro>(); // [수정됨]
+            textMeshPro = GetComponent<TextMeshPro>();
     }
 
     void Update()

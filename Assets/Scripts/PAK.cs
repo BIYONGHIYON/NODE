@@ -30,13 +30,11 @@ public class PAK : MonoBehaviour
     private Quaternion startRotation;
     private float elapsedTime = 0f;
 
-    // 기존 PAK.cs의 Start() 함수 내부만 이렇게 수정해 주세요.
     void Start()
     {
         textMeshPro = GetComponent<TextMeshProUGUI>();
         camTransform = Camera.main.transform;
 
-        // [추가된 부분] 씬이 이동하면서 VideoPlayer 참조가 끊겼다면 유지되고 있는 메인 카메라에서 직접 찾습니다.
         if (introVideo == null && Camera.main != null)
         {
             introVideo = Camera.main.GetComponent<VideoPlayer>();
@@ -67,17 +65,13 @@ public class PAK : MonoBehaviour
             Color color = textMeshPro.color;
             float maxAlphaRange = 1f + (holdTime * blinkSpeed / 2f);
             
-            // Time.unscaledTime을 사용하므로 일시 정지(timeScale = 0) 상태에서도 텍스트는 정상적으로 깜빡입니다.
             float pingPongValue = Mathf.PingPong(Time.unscaledTime * blinkSpeed, maxAlphaRange);
             color.a = Mathf.Clamp01(pingPongValue);
             textMeshPro.color = color;
         }
 
-        // ==========================================
-        // [수정됨] Time.timeScale > 0f 조건을 추가하여, 메뉴가 켜져서 시간이 멈춘 상태에서는 입력을 완전히 무시합니다.
         if (Input.anyKeyDown && !Input.GetKeyDown(KeyCode.Escape) && !isStarting && Time.timeScale > 0f)
         {
-        // ==========================================
             isStarting = true;
 
             if (sfxSource != null && cameraMoveSound != null)
