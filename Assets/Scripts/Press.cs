@@ -14,15 +14,16 @@ public class TutorialTextController : MonoBehaviour
     private bool isStarting = false;
     private bool isFadingOut = false; // 페이드 아웃이 시작되었는지 체크하는 플래그
 
-    // 상태를 저장할 고유 키값
-    private string saveKey = "IsHookTutorialCleared"; 
+    // PlayerPrefs 대신 static 변수 사용 (게임 실행 중에만 유지, 껐다 켜면 초기화됨)
+    private static bool isTutorialCleared = false; 
 
     void Start()
     {
         if (textMeshPro == null)
             textMeshPro = GetComponent<TextMeshPro>();
 
-        if (PlayerPrefs.GetInt(saveKey, 0) == 1)
+        // static 변수를 확인하여 이미 클리어했다면 비활성화
+        if (isTutorialCleared)
         {
             gameObject.SetActive(false);
             return;
@@ -68,8 +69,8 @@ public class TutorialTextController : MonoBehaviour
         startColor.a = 0f;
         textMeshPro.color = startColor;
 
-        PlayerPrefs.SetInt(saveKey, 1);
-        PlayerPrefs.Save();
+        // 튜토리얼 클리어 상태를 true로 변경
+        isTutorialCleared = true;
 
         gameObject.SetActive(false);
     }
