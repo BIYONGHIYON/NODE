@@ -4,24 +4,34 @@ using UnityEngine;
 public class RopeAction : MonoBehaviour
 {
     public static int connectedRopes = 0;
-    private LineRenderer lr;
-    private SpringJoint sj;
-    private bool isRoped = false;
     
-    private bool isTying = false; 
-    private bool isAnimating = false; 
+    // =========================================================================
+    // [지형(Anchor)용 컴포넌트]
+    private LineRenderer lrAnchor;
+    private SpringJoint sjAnchor;
+    private bool isAnchorRoped = false;
+    private bool isAnchorAnimating = false;
     private Transform targetAnchor;
-    private Coroutine ropeCoroutine;
+    private Coroutine anchorCoroutine;
+    
+    // [플레이어(Player)용 컴포넌트]
+    private LineRenderer lrPlayer;
+    private SpringJoint sjPlayer;
+    private bool isPlayerRoped = false;
+    private bool isPlayerAnimating = false;
+    private Transform targetPlayer;
+    private Coroutine playerCoroutine;
+    private GameObject playerHookObject; 
+    // =========================================================================
+
     private Animator anim; 
 
-    // =========================================================================
     [Header("로프 비주얼 설정")]
     public GameObject hookObject; 
 
     [Header("로프 사운드 설정")]
     public AudioSource ropeSfxSource;
     public AudioClip ropeConnectSound;
-    // =========================================================================
 
     [Header("로프 설정")]
     public KeyCode ropeKey1;
@@ -35,6 +45,9 @@ public class RopeAction : MonoBehaviour
     [Header("로프 애니메이션 설정")]
     public float ropeShootSpeed = 40f; 
 
+    [HideInInspector] public bool isHoldingKey = false;
+    [HideInInspector] public float holdTimer = 0f;
+
     void Start()
     {
         anim = GetComponentInChildren<Animator>(); 
@@ -43,74 +56,154 @@ public class RopeAction : MonoBehaviour
     void Awake()
     {
         connectedRopes = 0;
-        lr = GetComponent<LineRenderer>();
-        sj = GetComponent<SpringJoint>();
+        
+        lrAnchor = GetComponent<LineRenderer>();
+        sjAnchor = GetComponent<SpringJoint>();
+        lrAnchor.enabled = false;
+        sjAnchor.spring = 0f;
+        sjAnchor.damper = 0f;
+        sjAnchor.autoConfigureConnectedAnchor = false;
 
-        lr.enabled = false;
-        sj.spring = 0f;
-        sj.damper = 0f;
-        sj.autoConfigureConnectedAnchor = false;
+        // =========================================================
+        // [수정됨] 유니티는 한 오브젝트에 두 개의 LineRenderer를 허용하지 않으므로,
+        // 플레이어용 선을 그릴 전용 '자식 오브젝트'를 하나 생성해서 거기에 추가합니다!
+        GameObject playerRopeObj = new GameObject("PlayerRopeRenderer");
+        playerRopeObj.transform.SetParent(transform);
+        playerRopeObj.transform.localPosition = Vector3.zero;
+
+        lrPlayer = playerRopeObj.AddComponent<LineRenderer>();
+        lrPlayer.sharedMaterial = lrAnchor.sharedMaterial;
+        lrPlayer.startWidth = lrAnchor.startWidth;
+        lrPlayer.endWidth = lrAnchor.endWidth;
+        lrPlayer.startColor = lrAnchor.startColor;
+        lrPlayer.endColor = lrAnchor.endColor;
+        lrPlayer.textureMode = lrAnchor.textureMode;
+        lrPlayer.positionCount = 2;
+        lrPlayer.enabled = false;
+        // =========================================================
+
+        // SpringJoint는 여러 개를 달 수 있으며, 플레이어를 물리적으로 당겨야 하므로 본체에 추가합니다.
+        sjPlayer = gameObject.AddComponent<SpringJoint>();
+        sjPlayer.autoConfigureConnectedAnchor = false;
+        sjPlayer.spring = 0f;
+        sjPlayer.damper = 0f;
 
         if (hookObject != null)
         {
             hookObject.SetActive(false);
+            playerHookObject = Instantiate(hookObject, transform);
+            playerHookObject.name = "PlayerHookObject";
+            playerHookObject.SetActive(false);
         }
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(ropeKey1) || Input.GetKeyDown(ropeKey2))
+        // 1. 키를 누르는 순간 타이머 시작
+        if (IsRopeKeyDown())
         {
-            if (isRoped || isAnimating) Detach();
-            else TryAttach();
+            isHoldingKey = true;
+            holdTimer = 0f;
         }
 
-        if (isRoped && targetAnchor != null && !isAnimating)
+        // 2. 키를 꾹 누르고 있는 동안 (1초 도달 체크)
+        if (IsRopeKey() && isHoldingKey)
         {
-            lr.SetPosition(0, ropeLaunchPoint.position);
-            lr.SetPosition(1, targetAnchor.position);
+            holdTimer += Time.deltaTime;
+            if (holdTimer >= 1f)
+            {
+                isHoldingKey = false; // 차징 완료!
+                
+                RopeAction otherRope = GetOtherRope();
+                
+                // [핵심 로직] 두 플레이어 사이의 로프 상태 공유 확인
+                if (HasPlayerRopeActive())
+                {
+                    // 내가 이미 쏜 로프가 있다면 -> 내 로프 해제
+                    DetachPlayer();
+                }
+                else if (otherRope != null && otherRope.HasPlayerRopeActive())
+                {
+                    // 상대방이 나에게 쏜 로프가 있다면 -> 상대방 로프를 원격으로 강제 해제
+                    otherRope.DetachPlayer();
+                }
+                else
+                {
+                    // 둘 다 쏜 로프가 없다면 -> 상대방에게 발사!
+                    TargetOtherPlayer();
+                }
+            }
+        }
 
+        // 3. 키를 뗐을 때 (1초 미만으로 눌렀다 뗐을 때)
+        if (IsRopeKeyUp() && isHoldingKey)
+        {
+            isHoldingKey = false; // 차징 취소
+
+            // 짧게 눌렀으므로 무조건 지형(Anchor) 조작으로 간주
+            if (isAnchorAnimating || isAnchorRoped)
+            {
+                DetachAnchor(); 
+            }
+            else
+            {
+                TryAttachToAnchor(); 
+            }
+        }
+
+        // =====================================================================
+        // 라인 렌더러 위치 업데이트
+        // =====================================================================
+        if (isAnchorRoped && targetAnchor != null && !isAnchorAnimating)
+        {
+            lrAnchor.SetPosition(0, ropeLaunchPoint.position);
+            lrAnchor.SetPosition(1, targetAnchor.position);
             if (hookObject != null)
             {
                 hookObject.transform.position = targetAnchor.position;
-                Vector3 direction = ropeLaunchPoint.position - targetAnchor.position;
-                if (direction != Vector3.zero)
-                {
-                    hookObject.transform.rotation = Quaternion.LookRotation(direction);
-                }
+                Vector3 dir = ropeLaunchPoint.position - targetAnchor.position;
+                if (dir != Vector3.zero) hookObject.transform.rotation = Quaternion.LookRotation(dir);
+            }
+        }
+
+        if (isPlayerRoped && targetPlayer != null && !isPlayerAnimating)
+        {
+            lrPlayer.SetPosition(0, ropeLaunchPoint.position);
+            lrPlayer.SetPosition(1, targetPlayer.position);
+            if (playerHookObject != null)
+            {
+                playerHookObject.transform.position = targetPlayer.position;
+                Vector3 dir = ropeLaunchPoint.position - targetPlayer.position;
+                if (dir != Vector3.zero) playerHookObject.transform.rotation = Quaternion.LookRotation(dir);
             }
         }
     }
 
-    void TryAttach()
+    void UpdateAnimState()
+    {
+        bool tying = isAnchorRoped || isPlayerRoped;
+        if (anim != null) anim.SetBool("isTying", tying);
+    }
+
+    // =========================================================================
+    // [지형(Anchor) 전용 로직] 
+    // =========================================================================
+    void TryAttachToAnchor()
     {
         Collider[] cols = Physics.OverlapSphere(ropeLaunchPoint.position, ropeRange);
-        
         Transform closestTarget = null;
-        float minDistance = float.MaxValue;
+        float minDist = float.MaxValue;
 
         foreach (var col in cols)
         {
             if (col.gameObject == this.gameObject) continue;
-
-            if (col.CompareTag("Anchor") || col.CompareTag("Player"))
+            if (col.CompareTag("Anchor"))
             {
-                Transform potentialTarget = col.transform;
-
-                if (col.CompareTag("Player"))
+                float dist = Vector3.Distance(ropeLaunchPoint.position, col.transform.position);
+                if (dist < minDist)
                 {
-                    RopeAction targetRope = col.GetComponent<RopeAction>();
-                    if (targetRope != null && targetRope.ropeLaunchPoint != null)
-                    {
-                        potentialTarget = targetRope.ropeLaunchPoint;
-                    }
-                }
-
-                float dist = Vector3.Distance(ropeLaunchPoint.position, potentialTarget.position);
-                if (dist < minDistance)
-                {
-                    minDistance = dist;
-                    closestTarget = potentialTarget;
+                    minDist = dist;
+                    closestTarget = col.transform;
                 }
             }
         }
@@ -118,168 +211,223 @@ public class RopeAction : MonoBehaviour
         if (closestTarget != null)
         {
             targetAnchor = closestTarget;
-            
-            if (ropeCoroutine != null) StopCoroutine(ropeCoroutine);
-            ropeCoroutine = StartCoroutine(AnimateRopeShoot());
+            if (anchorCoroutine != null) StopCoroutine(anchorCoroutine);
+            anchorCoroutine = StartCoroutine(AnimateAnchorShoot());
         }
     }
 
-    IEnumerator AnimateRopeShoot()
+    IEnumerator AnimateAnchorShoot()
     {
-        isAnimating = true;
-        lr.enabled = true;
-        lr.positionCount = 2;
+        isAnchorAnimating = true;
+        lrAnchor.enabled = true;
+        lrAnchor.positionCount = 2;
+        if (hookObject != null) { hookObject.SetActive(true); hookObject.transform.position = ropeLaunchPoint.position; hookObject.transform.SetParent(null); }
 
-        if (hookObject != null)
+        Vector3 curPos = ropeLaunchPoint.position;
+        while (Vector3.Distance(curPos, targetAnchor.position) > 0.1f)
         {
-            hookObject.SetActive(true);
-            hookObject.transform.position = ropeLaunchPoint.position;
-            hookObject.transform.SetParent(null); 
-        }
-
-        Vector3 currentEndPos = ropeLaunchPoint.position;
-
-        while (Vector3.Distance(currentEndPos, targetAnchor.position) > 0.1f)
-        {
-            currentEndPos = Vector3.MoveTowards(currentEndPos, targetAnchor.position, ropeShootSpeed * Time.deltaTime);
-
-            lr.SetPosition(0, ropeLaunchPoint.position);
-            lr.SetPosition(1, currentEndPos);
-
+            curPos = Vector3.MoveTowards(curPos, targetAnchor.position, ropeShootSpeed * Time.deltaTime);
+            lrAnchor.SetPosition(0, ropeLaunchPoint.position);
+            lrAnchor.SetPosition(1, curPos);
             if (hookObject != null)
             {
-                hookObject.transform.position = currentEndPos;
-                Vector3 direction = targetAnchor.position - ropeLaunchPoint.position;
-                if (direction != Vector3.zero)
-                {
-                    hookObject.transform.rotation = Quaternion.LookRotation(direction);
-                }
+                hookObject.transform.position = curPos;
+                Vector3 dir = targetAnchor.position - ropeLaunchPoint.position;
+                if (dir != Vector3.zero) hookObject.transform.rotation = Quaternion.LookRotation(dir);
             }
-
             yield return null;
         }
-
-        isAnimating = false;
-        AttachPhysics(); 
+        isAnchorAnimating = false;
+        AttachAnchorPhysics();
     }
 
-    void AttachPhysics()
+    void AttachAnchorPhysics()
     {
-        if (!isRoped)
-        {
-            connectedRopes++;
-            if (connectedRopes >= 2)
-            {
-                TutorialTextController tutorialText = FindObjectOfType<TutorialTextController>();
-                if (tutorialText != null)
-                {
-                    tutorialText.OnBothHooksConnected();
-                }
-            }
-        }
-        isRoped = true;
-        isTying = true;
-        if (anim != null) anim.SetBool("isTying", isTying);
+        if (!isAnchorRoped && !isPlayerRoped) connectedRopes++; 
+        
+        isAnchorRoped = true;
+        UpdateAnimState();
+        if (ropeSfxSource != null && ropeConnectSound != null) ropeSfxSource.PlayOneShot(ropeConnectSound);
 
-        if (ropeSfxSource != null && ropeConnectSound != null)
-        {
-            ropeSfxSource.PlayOneShot(ropeConnectSound);
-        }
+        sjAnchor.anchor = transform.InverseTransformPoint(ropeLaunchPoint.position); 
+        sjAnchor.enableCollision = true;
 
-        sj.anchor = transform.InverseTransformPoint(ropeLaunchPoint.position); 
-
-        if (hookObject != null)
-        {
-            hookObject.transform.position = targetAnchor.position; 
-            hookObject.transform.SetParent(targetAnchor);
-        }
+        if (hookObject != null) { hookObject.transform.position = targetAnchor.position; hookObject.transform.SetParent(targetAnchor); }
 
         Rigidbody targetRb = targetAnchor.GetComponentInParent<Rigidbody>();
+        if (targetRb != null) { sjAnchor.connectedBody = targetRb; sjAnchor.connectedAnchor = targetRb.transform.InverseTransformPoint(targetAnchor.position); }
+        else { sjAnchor.connectedBody = null; sjAnchor.connectedAnchor = targetAnchor.position; }
 
-        if (targetRb != null && targetRb.CompareTag("Player"))
-        {
-            sj.connectedBody = targetRb;
-            sj.connectedAnchor = targetRb.transform.InverseTransformPoint(targetAnchor.position);
-        }
-        else
-        {
-            sj.connectedBody = null; 
-            sj.connectedAnchor = targetAnchor.position;
-        }
-
-        sj.spring = ropeSpring;
-        sj.damper = ropeDamper;
-        sj.maxDistance = Vector3.Distance(ropeLaunchPoint.position, targetAnchor.position);
+        sjAnchor.spring = ropeSpring;
+        sjAnchor.damper = ropeDamper;
+        sjAnchor.maxDistance = Vector3.Distance(ropeLaunchPoint.position, targetAnchor.position);
     }
 
-    void Detach()
+    void DetachAnchor()
     {
-        if (isRoped)
-        {
-            connectedRopes--;
-        }
-        isRoped = false;
-        isTying = false; 
-        if (anim != null) anim.SetBool("isTying", isTying);
+        if (isAnchorRoped && !isPlayerRoped) connectedRopes--;
+        isAnchorRoped = false;
+        UpdateAnimState();
 
-        sj.spring = 0f;
-        sj.damper = 0f;
-        sj.connectedBody = null; 
+        sjAnchor.spring = 0f;
+        sjAnchor.damper = 0f;
+        sjAnchor.connectedBody = null; 
         targetAnchor = null;
 
-        if (hookObject != null)
-        {
-            hookObject.transform.SetParent(null);
-        }
+        if (hookObject != null) hookObject.transform.SetParent(null);
+        if (anchorCoroutine != null) StopCoroutine(anchorCoroutine);
 
-        if (ropeCoroutine != null) StopCoroutine(ropeCoroutine);
+        if (lrAnchor.enabled) anchorCoroutine = StartCoroutine(AnimateAnchorRetract(lrAnchor.GetPosition(1)));
+        else isAnchorAnimating = false;
+    }
 
-        if (lr.enabled)
+    IEnumerator AnimateAnchorRetract(Vector3 startPos)
+    {
+        isAnchorAnimating = true;
+        Vector3 curPos = startPos; 
+        while (Vector3.Distance(curPos, ropeLaunchPoint.position) > 0.1f)
         {
-            Vector3 currentEndPos = lr.GetPosition(1); 
-            ropeCoroutine = StartCoroutine(AnimateRopeRetract(currentEndPos));
+            curPos = Vector3.MoveTowards(curPos, ropeLaunchPoint.position, ropeShootSpeed * Time.deltaTime);
+            lrAnchor.SetPosition(0, ropeLaunchPoint.position);
+            lrAnchor.SetPosition(1, curPos);
+            if (hookObject != null)
+            {
+                hookObject.transform.position = curPos;
+                Vector3 dir = ropeLaunchPoint.position - curPos;
+                if (dir != Vector3.zero) hookObject.transform.rotation = Quaternion.LookRotation(dir);
+            }
+            yield return null;
         }
-        else
+        if (hookObject != null) { hookObject.transform.SetParent(ropeLaunchPoint); hookObject.transform.localPosition = Vector3.zero; hookObject.SetActive(false); }
+        lrAnchor.enabled = false;
+        isAnchorAnimating = false;
+    }
+
+    // =========================================================================
+    // [플레이어(Player) 전용 로직]
+    // =========================================================================
+    // 외부에서 현재 로프가 쏴지고 있거나 걸려있는 상태인지 확인하는 함수
+    public bool HasPlayerRopeActive()
+    {
+        return isPlayerRoped || isPlayerAnimating;
+    }
+
+    void TargetOtherPlayer()
+    {
+        RopeAction otherRope = GetOtherRope();
+        if (otherRope != null)
         {
-            isAnimating = false;
+            targetPlayer = otherRope.ropeLaunchPoint;
+            if (playerCoroutine != null) StopCoroutine(playerCoroutine);
+            playerCoroutine = StartCoroutine(AnimatePlayerShoot());
         }
     }
 
-    IEnumerator AnimateRopeRetract(Vector3 startRetractPos)
+    IEnumerator AnimatePlayerShoot()
     {
-        isAnimating = true;
-        Vector3 currentEndPos = startRetractPos; 
+        isPlayerAnimating = true;
+        lrPlayer.enabled = true;
+        lrPlayer.positionCount = 2;
+        if (playerHookObject != null) { playerHookObject.SetActive(true); playerHookObject.transform.position = ropeLaunchPoint.position; playerHookObject.transform.SetParent(null); }
 
-        while (Vector3.Distance(currentEndPos, ropeLaunchPoint.position) > 0.1f)
+        Vector3 curPos = ropeLaunchPoint.position;
+        while (Vector3.Distance(curPos, targetPlayer.position) > 0.1f)
         {
-            currentEndPos = Vector3.MoveTowards(currentEndPos, ropeLaunchPoint.position, ropeShootSpeed * Time.deltaTime);
-
-            lr.SetPosition(0, ropeLaunchPoint.position);
-            lr.SetPosition(1, currentEndPos);
-
-            if (hookObject != null)
+            curPos = Vector3.MoveTowards(curPos, targetPlayer.position, ropeShootSpeed * Time.deltaTime);
+            lrPlayer.SetPosition(0, ropeLaunchPoint.position);
+            lrPlayer.SetPosition(1, curPos);
+            if (playerHookObject != null)
             {
-                hookObject.transform.position = currentEndPos;
-                Vector3 direction = ropeLaunchPoint.position - currentEndPos;
-                if (direction != Vector3.zero)
-                {
-                    hookObject.transform.rotation = Quaternion.LookRotation(direction);
-                }
+                playerHookObject.transform.position = curPos;
+                Vector3 dir = targetPlayer.position - ropeLaunchPoint.position;
+                if (dir != Vector3.zero) playerHookObject.transform.rotation = Quaternion.LookRotation(dir);
             }
-
             yield return null;
         }
+        isPlayerAnimating = false;
+        AttachPlayerPhysics();
+    }
 
-        if (hookObject != null)
+    void AttachPlayerPhysics()
+    {
+        isPlayerRoped = true;
+        UpdateAnimState();
+        if (ropeSfxSource != null && ropeConnectSound != null) ropeSfxSource.PlayOneShot(ropeConnectSound);
+
+        sjPlayer.anchor = transform.InverseTransformPoint(ropeLaunchPoint.position); 
+        sjPlayer.enableCollision = true;
+
+        if (playerHookObject != null) { playerHookObject.transform.position = targetPlayer.position; playerHookObject.transform.SetParent(targetPlayer); }
+
+        Rigidbody targetRb = targetPlayer.GetComponentInParent<Rigidbody>();
+        if (targetRb != null) { sjPlayer.connectedBody = targetRb; sjPlayer.connectedAnchor = targetRb.transform.InverseTransformPoint(targetPlayer.position); }
+        else { sjPlayer.connectedBody = null; sjPlayer.connectedAnchor = targetPlayer.position; }
+
+        sjPlayer.spring = ropeSpring;
+        sjPlayer.damper = ropeDamper;
+        sjPlayer.maxDistance = Vector3.Distance(ropeLaunchPoint.position, targetPlayer.position);
+    }
+
+    // 상대방 스크립트에서도 호출할 수 있도록 public으로 열어둡니다!
+    public void DetachPlayer()
+    {
+        isPlayerRoped = false;
+        UpdateAnimState();
+
+        sjPlayer.spring = 0f;
+        sjPlayer.damper = 0f;
+        sjPlayer.connectedBody = null; 
+        targetPlayer = null;
+
+        if (playerHookObject != null) playerHookObject.transform.SetParent(null);
+        if (playerCoroutine != null) StopCoroutine(playerCoroutine);
+
+        if (lrPlayer.enabled) playerCoroutine = StartCoroutine(AnimatePlayerRetract(lrPlayer.GetPosition(1)));
+        else isPlayerAnimating = false;
+    }
+
+    IEnumerator AnimatePlayerRetract(Vector3 startPos)
+    {
+        isPlayerAnimating = true;
+        Vector3 curPos = startPos; 
+        while (Vector3.Distance(curPos, ropeLaunchPoint.position) > 0.1f)
         {
-            hookObject.transform.SetParent(ropeLaunchPoint);
-            hookObject.transform.localPosition = Vector3.zero;
-            hookObject.transform.localRotation = Quaternion.identity;
-            
-            hookObject.SetActive(false);
+            curPos = Vector3.MoveTowards(curPos, ropeLaunchPoint.position, ropeShootSpeed * Time.deltaTime);
+            lrPlayer.SetPosition(0, ropeLaunchPoint.position);
+            lrPlayer.SetPosition(1, curPos);
+            if (playerHookObject != null)
+            {
+                playerHookObject.transform.position = curPos;
+                Vector3 dir = ropeLaunchPoint.position - curPos;
+                if (dir != Vector3.zero) playerHookObject.transform.rotation = Quaternion.LookRotation(dir);
+            }
+            yield return null;
         }
+        if (playerHookObject != null) { playerHookObject.transform.SetParent(ropeLaunchPoint); playerHookObject.transform.localPosition = Vector3.zero; playerHookObject.SetActive(false); }
+        lrPlayer.enabled = false;
+        isPlayerAnimating = false;
+    }
 
-        lr.enabled = false;
-        isAnimating = false;
+    // =========================================================================
+    // [헬퍼 함수]
+    // =========================================================================
+    RopeAction GetOtherRope()
+    {
+        RopeAction[] ropes = FindObjectsOfType<RopeAction>();
+        foreach (var r in ropes) if (r != this) return r;
+        return null;
+    }
+
+    bool IsRopeKeyDown()
+    {
+        return (ropeKey1 != KeyCode.None && Input.GetKeyDown(ropeKey1)) || (ropeKey2 != KeyCode.None && Input.GetKeyDown(ropeKey2));
+    }
+    bool IsRopeKey()
+    {
+        return (ropeKey1 != KeyCode.None && Input.GetKey(ropeKey1)) || (ropeKey2 != KeyCode.None && Input.GetKey(ropeKey2));
+    }
+    bool IsRopeKeyUp()
+    {
+        return (ropeKey1 != KeyCode.None && Input.GetKeyUp(ropeKey1)) || (ropeKey2 != KeyCode.None && Input.GetKeyUp(ropeKey2));
     }
 }

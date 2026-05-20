@@ -7,6 +7,8 @@ TagManager:
   - Anchor
   - TrackingObject
   - Actors
+  - DeathZone
+  - Checkpoint
   layers:
   - Default
   - TransparentFX

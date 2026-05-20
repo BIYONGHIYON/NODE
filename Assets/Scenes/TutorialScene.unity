@@ -1634,12 +1634,14 @@ MonoBehaviour:
   ropeSfxSource: {fileID: 1396560760}
   ropeConnectSound: {fileID: 8300000, guid: 4155ed30c58434f7eb55dded369c790d, type: 3}
   ropeKey1: 102
-  ropeKey2: 0
+  ropeKey2: 102
   ropeRange: 1
   ropeSpring: 100
   ropeDamper: 1
   ropeLaunchPoint: {fileID: 14311094}
   ropeShootSpeed: 10
+  isHoldingKey: 0
+  holdTimer: 0
 --- !u!145 &467839701
 SpringJoint:
   m_ObjectHideFlags: 0
@@ -1902,6 +1904,8 @@ MonoBehaviour:
   ropeDamper: 5
   ropeLaunchPoint: {fileID: 61108219}
   ropeShootSpeed: 10
+  isHoldingKey: 0
+  holdTimer: 0
 --- !u!145 &482495793
 SpringJoint:
   m_ObjectHideFlags: 0
@@ -3238,6 +3242,12 @@ MonoBehaviour:
   character2: {fileID: 482495790}
   cameraSmoothTime: 0.2
   isTracking: 0
+  trackingYOffset: 0
+  minDistance: 5
+  maxDistance: 20
+  defaultZ: -15
+  zoomedOutZ: -30
+  zoomSmoothTime: 0.5
 --- !u!1 &766510122
 GameObject:
   m_ObjectHideFlags: 0
@@ -6318,7 +6328,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Press F, Ctr \nto connect"
+  m_text: "Press F, Ctr\n            \nClick: Anchor\nHold: Link Together"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0c86866be2dda1945afd2458232db447, type: 2}
   m_sharedMaterial: {fileID: 2512682053048635545, guid: 0c86866be2dda1945afd2458232db447,
@@ -6382,7 +6392,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: -0.54647994, w: -0.15264893}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
