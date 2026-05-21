@@ -17,6 +17,7 @@ public class FuelTank : MonoBehaviour
 
     void Start()
     {
+        recentlyCollected.Clear(); // 씬이 시작될 때 찌꺼기가 남아있지 않도록 싹 비워줍니다.
         originalScale = transform.localScale;
         
         if (fuelAcquiredUI != null)

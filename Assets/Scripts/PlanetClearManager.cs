@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI; 
 
-public class SaturnManager : MonoBehaviour
+public class PlanetClearManager : MonoBehaviour
 {
     [Header("Scene Settings")]
     public string tutorialSceneName = "TutorialScene"; 

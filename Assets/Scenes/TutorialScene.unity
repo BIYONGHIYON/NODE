@@ -728,7 +728,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 2a720e1e8ba634a5f99171dfeb56a2be, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.8
+  m_Volume: 0.4
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -1640,6 +1640,7 @@ MonoBehaviour:
   ropeDamper: 1
   ropeLaunchPoint: {fileID: 14311094}
   ropeShootSpeed: 10
+  chargeTimeRequired: 0.7
   isHoldingKey: 0
   holdTimer: 0
 --- !u!145 &467839701
@@ -1904,6 +1905,7 @@ MonoBehaviour:
   ropeDamper: 5
   ropeLaunchPoint: {fileID: 61108219}
   ropeShootSpeed: 10
+  chargeTimeRequired: 0.7
   isHoldingKey: 0
   holdTimer: 0
 --- !u!145 &482495793
@@ -3602,6 +3604,7 @@ MonoBehaviour:
   sfxSource: {fileID: 702314401}
   successSound: {fileID: 8300000, guid: f9ce3afac89b14b7da7a8264c0296c07, type: 3}
   errorSound: {fileID: 8300000, guid: c4b6ba5571001411097d6c9cf78a5c33, type: 3}
+  mainMixer: {fileID: 24100000, guid: 0a14cd2b8e2904677bcf1ee1c266fec0, type: 2}
 --- !u!1 &1000155239 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -6689036041284674117, guid: 5c99864c6b7c2446cb431e108f842238,
@@ -4336,7 +4339,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 2a720e1e8ba634a5f99171dfeb56a2be, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.8
+  m_Volume: 0.4
   m_Pitch: 1
   Loop: 1
   Mute: 0

@@ -11,6 +11,10 @@ public class LevelExit : MonoBehaviour
     
     public float warningDuration = 2f;
 
+    [Header("클리어 설정")]
+    [Tooltip("이 행성을 클리어했을 때 도달하게 될 진행도 숫자입니다.")]
+    public int progressToSetOnClear = 2;
+
     private bool isTransitioning = false;
     private List<GameObject> playersInZone = new List<GameObject>();
 
@@ -46,37 +50,31 @@ public class LevelExit : MonoBehaviour
 
     void CheckConditionAndExit()
     {
-        // 1. 연료통을 획득하지 못했다면 경고
         if (!GameData.isFuelAcquired)
         {
             StartCoroutine(ShowWarningRoutine());
             return;
         }
 
-        // 2. 연료통을 획득했고 두 명이 모두 들어왔다면 탈출!
         if (GameData.isFuelAcquired && playersInZone.Count >= 2)
         {
             if (isTransitioning) return;
             isTransitioning = true;
 
-            // 진행도를 업데이트하고 획득 상태를 초기화합니다.
-            GameData.currentProgress = 1;
+            // [수정 포인트] 다음 씬을 위해 획득 상태 초기화
+            // (currentProgress 숫자는 인스펙터에서 설정한 대로 1 -> 2로 갱신됩니다)
+            GameData.currentProgress = progressToSetOnClear; 
             GameData.isFuelAcquired = false; 
 
-            // [핵심] 이미 씬에 존재하는 GameMenuManager를 찾아서, 
-            // 정상 작동하는 ReturnToShip(페이드아웃 및 카메라 이동) 로직을 대신 실행시킵니다!
-            GameMenuManager menuManager = FindObjectOfType<GameMenuManager>();
+            // ========================================================
+            // 새롭게 만든 만능 클리어 매니저를 찾아서 실행시킵니다!
+            PlanetClearManager clearManager = FindObjectOfType<PlanetClearManager>();
             
-            if (menuManager != null)
+            if (clearManager != null)
             {
-                menuManager.ReturnToShip();
+                clearManager.ReturnToTutorial();
             }
-            else
-            {
-                // 혹시라도 매니저를 찾지 못했을 때를 대비한 안전 장치
-                Debug.LogWarning("GameMenuManager를 찾지 못해 기본 방식으로 이동합니다.");
-                SceneManager.LoadScene("TutorialScene");
-            }
+            // ========================================================
         }
     }
 
