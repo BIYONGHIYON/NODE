@@ -36,7 +36,10 @@ public class RopeAction : MonoBehaviour
     [Header("로프 설정")]
     public KeyCode ropeKey1;
     public KeyCode ropeKey2;      
+    
+    [Tooltip("로프가 닿는 최대 거리입니다.")]
     public float ropeRange = 7f; 
+    
     public float ropeSpring = 50f; 
     public float ropeDamper = 5f;  
     
@@ -44,6 +47,11 @@ public class RopeAction : MonoBehaviour
 
     [Header("로프 애니메이션 설정")]
     public float ropeShootSpeed = 40f; 
+
+    // [수정됨] 차징 시간을 0.7초로 변경
+    [Header("조작 설정")]
+    [Tooltip("플레이어 연결/해제에 필요한 꾹 누르는 시간")]
+    public float chargeTimeRequired = 0.7f;
 
     [HideInInspector] public bool isHoldingKey = false;
     [HideInInspector] public float holdTimer = 0f;
@@ -64,9 +72,6 @@ public class RopeAction : MonoBehaviour
         sjAnchor.damper = 0f;
         sjAnchor.autoConfigureConnectedAnchor = false;
 
-        // =========================================================
-        // [수정됨] 유니티는 한 오브젝트에 두 개의 LineRenderer를 허용하지 않으므로,
-        // 플레이어용 선을 그릴 전용 '자식 오브젝트'를 하나 생성해서 거기에 추가합니다!
         GameObject playerRopeObj = new GameObject("PlayerRopeRenderer");
         playerRopeObj.transform.SetParent(transform);
         playerRopeObj.transform.localPosition = Vector3.zero;
@@ -80,9 +85,7 @@ public class RopeAction : MonoBehaviour
         lrPlayer.textureMode = lrAnchor.textureMode;
         lrPlayer.positionCount = 2;
         lrPlayer.enabled = false;
-        // =========================================================
 
-        // SpringJoint는 여러 개를 달 수 있으며, 플레이어를 물리적으로 당겨야 하므로 본체에 추가합니다.
         sjPlayer = gameObject.AddComponent<SpringJoint>();
         sjPlayer.autoConfigureConnectedAnchor = false;
         sjPlayer.spring = 0f;
@@ -106,41 +109,53 @@ public class RopeAction : MonoBehaviour
             holdTimer = 0f;
         }
 
-        // 2. 키를 꾹 누르고 있는 동안 (1초 도달 체크)
+        // 2. 키를 꾹 누르고 있는 동안 (0.7초 도달 체크)
         if (IsRopeKey() && isHoldingKey)
         {
             holdTimer += Time.deltaTime;
-            if (holdTimer >= 1f)
+            
+            // [수정됨] 고정된 1초 대신 인스펙터 설정값(0.7초) 사용
+            if (holdTimer >= chargeTimeRequired)
             {
                 isHoldingKey = false; // 차징 완료!
                 
                 RopeAction otherRope = GetOtherRope();
                 
-                // [핵심 로직] 두 플레이어 사이의 로프 상태 공유 확인
                 if (HasPlayerRopeActive())
                 {
-                    // 내가 이미 쏜 로프가 있다면 -> 내 로프 해제
                     DetachPlayer();
                 }
                 else if (otherRope != null && otherRope.HasPlayerRopeActive())
                 {
-                    // 상대방이 나에게 쏜 로프가 있다면 -> 상대방 로프를 원격으로 강제 해제
                     otherRope.DetachPlayer();
                 }
                 else
                 {
-                    // 둘 다 쏜 로프가 없다면 -> 상대방에게 발사!
-                    TargetOtherPlayer();
+                    // [버그 수정] 발사하기 직전에 상대방과의 거리를 한 번 더 체크합니다!
+                    if (otherRope != null)
+                    {
+                        float distanceToPartner = Vector3.Distance(ropeLaunchPoint.position, otherRope.ropeLaunchPoint.position);
+                        
+                        // 거리가 로프 최대 사거리(ropeRange) 이내일 때만 발사 허용
+                        if (distanceToPartner <= ropeRange)
+                        {
+                            TargetOtherPlayer(otherRope);
+                        }
+                        else
+                        {
+                            // 너무 멀어졌다면 발사 실패 처리 (효과음 등을 넣기 좋은 위치)
+                            Debug.Log("파트너가 너무 멀어 로프를 연결할 수 없습니다!");
+                        }
+                    }
                 }
             }
         }
 
-        // 3. 키를 뗐을 때 (1초 미만으로 눌렀다 뗐을 때)
+        // 3. 키를 뗐을 때 (0.7초 미만으로 눌렀다 뗐을 때)
         if (IsRopeKeyUp() && isHoldingKey)
         {
-            isHoldingKey = false; // 차징 취소
+            isHoldingKey = false; 
 
-            // 짧게 눌렀으므로 무조건 지형(Anchor) 조작으로 간주
             if (isAnchorAnimating || isAnchorRoped)
             {
                 DetachAnchor(); 
@@ -260,7 +275,10 @@ public class RopeAction : MonoBehaviour
 
         sjAnchor.spring = ropeSpring;
         sjAnchor.damper = ropeDamper;
-        sjAnchor.maxDistance = Vector3.Distance(ropeLaunchPoint.position, targetAnchor.position);
+        
+        // [버그 방지] 지형 훅도 ropeRange를 절대 넘지 못하게 강제 고정합니다.
+        float actualDistance = Vector3.Distance(ropeLaunchPoint.position, targetAnchor.position);
+        sjAnchor.maxDistance = Mathf.Min(actualDistance, ropeRange);
     }
 
     void DetachAnchor()
@@ -306,15 +324,14 @@ public class RopeAction : MonoBehaviour
     // =========================================================================
     // [플레이어(Player) 전용 로직]
     // =========================================================================
-    // 외부에서 현재 로프가 쏴지고 있거나 걸려있는 상태인지 확인하는 함수
     public bool HasPlayerRopeActive()
     {
         return isPlayerRoped || isPlayerAnimating;
     }
 
-    void TargetOtherPlayer()
+    // [수정됨] 매개변수로 미리 찾은 상대방(otherRope)을 전달받습니다.
+    void TargetOtherPlayer(RopeAction otherRope)
     {
-        RopeAction otherRope = GetOtherRope();
         if (otherRope != null)
         {
             targetPlayer = otherRope.ropeLaunchPoint;
@@ -365,10 +382,12 @@ public class RopeAction : MonoBehaviour
 
         sjPlayer.spring = ropeSpring;
         sjPlayer.damper = ropeDamper;
-        sjPlayer.maxDistance = Vector3.Distance(ropeLaunchPoint.position, targetPlayer.position);
+        
+        // [핵심 버그 수정] 거리가 벌어진 채로 연결되었더라도, 로프의 물리적 최대 길이는 절대 ropeRange를 초과하지 않게 못 박습니다!
+        float actualDistance = Vector3.Distance(ropeLaunchPoint.position, targetPlayer.position);
+        sjPlayer.maxDistance = Mathf.Min(actualDistance, ropeRange);
     }
 
-    // 상대방 스크립트에서도 호출할 수 있도록 public으로 열어둡니다!
     public void DetachPlayer()
     {
         isPlayerRoped = false;

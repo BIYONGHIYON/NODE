@@ -37,6 +37,7 @@ public class FuelTank : MonoBehaviour
     IEnumerator CollectRoutine()
     {
         isCollected = true;
+        GameData.isFuelAcquired = true;
         
         // 보관함에 이 연료통을 등록해둡니다. (죽으면 뱉어내기 위해)
         recentlyCollected.Add(this); 
@@ -70,6 +71,7 @@ public class FuelTank : MonoBehaviour
         StopAllCoroutines(); // 작아지던 중이거나 UI가 켜져있었다면 즉시 정지
         
         isCollected = false;
+        GameData.isFuelAcquired = false;
         transform.localScale = originalScale; // 크기 원상복구
         
         Collider col = GetComponent<Collider>();

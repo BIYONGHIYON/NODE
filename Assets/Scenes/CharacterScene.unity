@@ -582,6 +582,16 @@ PrefabInstance:
       propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7849439158563809307, guid: 5070232bf1c93412abdaa9bb105818b5,
+        type: 3}
+      propertyPath: cursorWidth
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7849439158563809307, guid: 5070232bf1c93412abdaa9bb105818b5,
+        type: 3}
+      propertyPath: cursorSpacing
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 8880797681434123072, guid: 5070232bf1c93412abdaa9bb105818b5,
         type: 3}
       propertyPath: m_AnchorMax.x
