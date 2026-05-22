@@ -1640,7 +1640,7 @@ MonoBehaviour:
   ropeDamper: 1
   ropeLaunchPoint: {fileID: 14311094}
   ropeShootSpeed: 10
-  chargeTimeRequired: 0.7
+  chargeTimeRequired: 0.5
   isHoldingKey: 0
   holdTimer: 0
 --- !u!145 &467839701
@@ -1902,10 +1902,10 @@ MonoBehaviour:
   ropeKey2: 307
   ropeRange: 1
   ropeSpring: 100
-  ropeDamper: 5
+  ropeDamper: 1
   ropeLaunchPoint: {fileID: 61108219}
   ropeShootSpeed: 10
-  chargeTimeRequired: 0.7
+  chargeTimeRequired: 0.5
   isHoldingKey: 0
   holdTimer: 0
 --- !u!145 &482495793

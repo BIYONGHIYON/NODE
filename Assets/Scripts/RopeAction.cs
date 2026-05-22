@@ -51,7 +51,7 @@ public class RopeAction : MonoBehaviour
     // [수정됨] 차징 시간을 0.7초로 변경
     [Header("조작 설정")]
     [Tooltip("플레이어 연결/해제에 필요한 꾹 누르는 시간")]
-    public float chargeTimeRequired = 0.7f;
+    public float chargeTimeRequired = 0.5f;
 
     [HideInInspector] public bool isHoldingKey = false;
     [HideInInspector] public float holdTimer = 0f;
