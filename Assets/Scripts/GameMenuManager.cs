@@ -102,6 +102,7 @@ public class GameMenuManager : MonoBehaviour
     {
         if (isTransitioning) return; 
         isTransitioning = true;
+        GameData.justClearedPlanet = false;
 
         transform.SetParent(null); 
         DontDestroyOnLoad(gameObject);

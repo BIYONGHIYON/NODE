@@ -53,6 +53,7 @@ public class TitleCameraSetup : MonoBehaviour
         {
             SetupCameraPosition();
             PlayIntroVideo();
+            GameData.justClearedPlanet = false; // 타이틀 화면에 진입할 때마다 초기화
         }
     }
 
@@ -62,6 +63,7 @@ public class TitleCameraSetup : MonoBehaviour
         if (scene.name == "TitleScene")
         {
             // 메뉴를 통해 TitleScene으로 돌아왔을 때의 처리
+            GameData.justClearedPlanet = false; // 타이틀 화면에 진입할 때마다 초기화
             SetupCameraPosition();
             SkipIntroVideo();
         }

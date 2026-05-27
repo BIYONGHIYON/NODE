@@ -136,7 +136,8 @@ public class LevelExit : MonoBehaviour
         isTransitioning = true;
 
         GameData.currentProgress = progressToSetOnClear; 
-        GameData.isFuelAcquired = false; 
+        GameData.isFuelAcquired = false;
+        GameData.justClearedPlanet = true;
 
         PlanetClearManager clearManager = FindObjectOfType<PlanetClearManager>();
         if (clearManager != null)
