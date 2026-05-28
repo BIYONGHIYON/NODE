@@ -728,7 +728,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 2a720e1e8ba634a5f99171dfeb56a2be, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.4
+  m_Volume: 0.8
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -2514,6 +2514,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clearMessageUI: {fileID: 923463335}
   displayDuration: 3
+  initialDelay: 4.5
 --- !u!4 &573067917
 Transform:
   m_ObjectHideFlags: 0
@@ -4561,7 +4562,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 2a720e1e8ba634a5f99171dfeb56a2be, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.4
+  m_Volume: 0.8
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -5999,7 +6000,7 @@ AudioSource:
     type: 2}
   m_audioClip: {fileID: 8300000, guid: b807af7c550c24fa79d9024bc7f61322, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.5
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
