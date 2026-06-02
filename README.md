@@ -20,7 +20,7 @@
 | 액션 | Player 1 | Player 2 |
 | :--- | :--- | :--- |
 | **이동** | W, A, S, D | Up, Left, Down, Right Arrow |
-| **로프 발사/해제** | (F) | (Ctr or Alt(Opt) |
+| **로프 발사/해제** | (F) | (Ctr or Alt/Opt) |
 | **메뉴** | ESC | ESC |
 
 ---
