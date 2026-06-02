@@ -34,7 +34,6 @@ public class TitleCameraSetup : MonoBehaviour
     void Awake()
     {
         initialRotation = transform.rotation;
-
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -86,7 +85,7 @@ public class TitleCameraSetup : MonoBehaviour
         if (videoPlayer != null)
         {
             videoPlayer.enabled = true;
-            videoPlayer.loopPointReached += OnVideoEnd;
+            
             videoPlayer.Play(); 
         }
     }
@@ -104,25 +103,28 @@ public class TitleCameraSetup : MonoBehaviour
 
     void Update()
     {
-        if (videoPlayer != null && videoPlayer.enabled && videoPlayer.isPlaying)
+        if (videoPlayer != null && videoPlayer.enabled)
         {
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Escape))
             {
                 StopVideo();
+                return;
+            }
+
+            if (videoPlayer.isPrepared && videoPlayer.time > 0)
+            {
+                if (videoPlayer.time >= videoPlayer.length - 0.1f || !videoPlayer.isPlaying)
+                {
+                    StopVideo();
+                }
             }
         }
-    }
-
-    void OnVideoEnd(VideoPlayer vp)
-    {
-        StopVideo();
     }
 
     void StopVideo()
     {
         if (videoPlayer != null && videoPlayer.enabled)
         {
-            videoPlayer.loopPointReached -= OnVideoEnd;
             videoPlayer.Stop();
             videoPlayer.enabled = false;
         }

@@ -28,12 +28,14 @@ public class GameMenuManager : MonoBehaviour
     {
         if (pauseMenuRoot != null) pauseMenuRoot.SetActive(false);
 
+        // 슬라이더 값이 변할 때마다 자동으로 SetVolume 함수들이 실행되도록 연결!
         if (bgmSlider1) bgmSlider1.onValueChanged.AddListener(SetBGMVolume);
         if (sfxSlider1) sfxSlider1.onValueChanged.AddListener(SetSFXVolume);
         if (bgmSlider2) bgmSlider2.onValueChanged.AddListener(SetBGMVolume);
         if (sfxSlider2) sfxSlider2.onValueChanged.AddListener(SetSFXVolume);
 
         SetupMenuForCurrentScene();
+        
         LoadVolumeSettings();
     }
 
@@ -112,9 +114,10 @@ public class GameMenuManager : MonoBehaviour
         Debug.Log("게임 종료!");
         Application.Quit(); 
     }
+
     public void SetBGMVolume(float volume) 
     {
-        if (mainMixer != null) mainMixer.SetFloat("BGMVolume", Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20);
+        if (mainMixer != null) mainMixer.SetFloat("BGM", Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20);
         PlayerPrefs.SetFloat("SavedBGM", volume); 
         
         if (bgmSlider1 != null) bgmSlider1.SetValueWithoutNotify(volume);
@@ -123,7 +126,7 @@ public class GameMenuManager : MonoBehaviour
 
     public void SetSFXVolume(float volume) 
     {
-        if (mainMixer != null) mainMixer.SetFloat("SFXVolume", Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20);
+        if (mainMixer != null) mainMixer.SetFloat("SFX", Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20);
         PlayerPrefs.SetFloat("SavedSFX", volume); 
         
         if (sfxSlider1 != null) sfxSlider1.SetValueWithoutNotify(volume);
@@ -132,8 +135,8 @@ public class GameMenuManager : MonoBehaviour
 
     private void LoadVolumeSettings()
     {
-        float savedBGM = PlayerPrefs.GetFloat("SavedBGM", 1f);
-        float savedSFX = PlayerPrefs.GetFloat("SavedSFX", 1f);
+        float savedBGM = PlayerPrefs.GetFloat("SavedBGM", 0.4f);
+        float savedSFX = PlayerPrefs.GetFloat("SavedSFX", 0.4f);
 
         SetBGMVolume(savedBGM);
         SetSFXVolume(savedSFX);
