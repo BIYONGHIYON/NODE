@@ -10,7 +10,7 @@ public class SpaceShip : MonoBehaviour
 
     private Vector3 startPosition; 
     private Quaternion startRotation;
-    private int lastProgress = -1; // 이전 진행도를 저장해서 값이 바뀔 때만 위치 갱신
+    private int lastProgress = -1;
 
     void Start()
     {
@@ -20,7 +20,7 @@ public class SpaceShip : MonoBehaviour
         }
 
         startRotation = transform.rotation;
-        UpdateShipPosition(); // 시작할 때 한 번 위치 설정
+        UpdateShipPosition(); 
     }
 
     void Update()

@@ -35,12 +35,9 @@ public class CharacterSelectManager : MonoBehaviour
     [Header("Scene Transition")]
     public string nextSceneName = "GameScene"; 
 
-    // ==========================================
     [Header("Audio Settings")]
     public AudioSource sfxSource;
     public AudioClip readySound;
-    // ==========================================
-
     void Start()
     {
         UpdateCardSprites();
@@ -48,12 +45,8 @@ public class CharacterSelectManager : MonoBehaviour
 
     void Update()
     {
-        // 1. 카드 스무스 이동
         MoveCardsSmoothly();
 
-        // ==========================================
-        // 2. 플레이어 1 조작 (A, D, F)
-        // ==========================================
         if (!p1Ready)
         {
             if (Input.GetKeyDown(KeyCode.A)) 
@@ -93,9 +86,6 @@ public class CharacterSelectManager : MonoBehaviour
             CheckAllReady();
         }
 
-        // ==========================================
-        // 3. 플레이어 2 조작 (좌우 화살표, 우측 컨트롤)
-        // ==========================================
         if (!p2Ready)
         {
             if (Input.GetKeyDown(KeyCode.LeftArrow)) 
@@ -189,7 +179,6 @@ public class CharacterSelectManager : MonoBehaviour
         }
     }
 
-    // [추가됨] 효과음을 재생하는 헬퍼 함수
     void PlayReadySound()
     {
         if (sfxSource != null && readySound != null)

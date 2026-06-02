@@ -21,11 +21,8 @@ public class MovingAst : MonoBehaviour
     public AudioSource moveSfxSource;
     public float resumeTimeWindow = 0.5f; 
     
-    // ==========================================
-    // [추가됨] 페이드 아웃 속도를 조절하는 변수
     public float audioFadeSpeed = 10f; 
-    private float originalVolume = 1f; // 에디터에서 설정한 원래 볼륨값을 저장할 변수
-    // ==========================================
+    private float originalVolume = 1f;
 
     private float lastStopTime = -100f; 
 

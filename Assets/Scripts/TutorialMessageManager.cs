@@ -17,10 +17,8 @@ public class TutorialMessageManager : MonoBehaviour
     {
         if (clearMessageUI != null) clearMessageUI.SetActive(false);
 
-        // GameData에 '정상 클리어' 도장이 찍혀 있다면?
         if (GameData.justClearedPlanet)
         {
-            // 도장을 지워주고 코루틴 시작!
             GameData.justClearedPlanet = false; 
             StartCoroutine(ShowMessageRoutine());
         }
@@ -28,10 +26,8 @@ public class TutorialMessageManager : MonoBehaviour
 
     IEnumerator ShowMessageRoutine()
     {
-        // 1. 카메라 연출(3.6초) + 페이드인(약 1초)이 끝날 때까지 어둠 속에서 조용히 기다립니다.
         yield return new WaitForSeconds(initialDelay);
 
-        // 2. 화면이 완전히 밝아지면 그제야 짠! 하고 등장합니다.
         if (clearMessageUI != null)
         {
             clearMessageUI.SetActive(true);

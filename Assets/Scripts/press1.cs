@@ -9,10 +9,10 @@ public class press1 : MonoBehaviour
     public float holdTime = 1f;
     
     [Header("Fade Out Settings")]
-    public float fadeOutDuration = 1.5f; // 서서히 사라지는데 걸리는 시간(초)
+    public float fadeOutDuration = 1.5f;
 
     private bool isStarting = false;
-    private bool isFadingOut = false; // 페이드 아웃이 시작되었는지 체크하는 플래그
+    private bool isFadingOut = false; 
 
     void Start()
     {
@@ -22,7 +22,6 @@ public class press1 : MonoBehaviour
 
     void Update()
     {
-        // 2. 평소 깜빡임 로직
         if (textMeshPro != null && !isStarting && !isFadingOut)
         {
             Color color = textMeshPro.color;

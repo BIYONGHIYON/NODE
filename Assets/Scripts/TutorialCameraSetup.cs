@@ -7,12 +7,9 @@ public class TutorialCameraSetup : MonoBehaviour
     // 분리된 범용 매니저 스크립트를 연결할 변수
     public CoopPlayerManager playerManager; 
 
-    // ==========================================
-    // [추가됨] 효과음 설정 변수
     [Header("SFX Settings")]
     public AudioSource sfxSource;
     public AudioClip cameraMoveSound;
-    // ==========================================
 
     [Header("Camera Settings")]
     public Vector3 targetRotation = new Vector3(15f, 70f, 0f);
@@ -55,7 +52,6 @@ public class TutorialCameraSetup : MonoBehaviour
                     spaceshipObject.rotation = finalCamRot * Quaternion.Euler(localRotationOffset);
                 }
 
-                // 매니저에서 이미 스왑이 끝난 character1과 character2를 가져와 위치를 배치합니다.
                 PlaceCharactersRelativeToCamera(camMatrix, finalCamRot);
 
                 StartCoroutine(SmoothTransition(mainCam.transform, finalCamPos, targetRotation));
@@ -65,7 +61,6 @@ public class TutorialCameraSetup : MonoBehaviour
 
     void PlaceCharactersRelativeToCamera(Matrix4x4 camMatrix, Quaternion camRot)
     {
-        // playerManager에 있는 캐릭터 정보를 가져와서 씁니다.
         if (playerManager.character1 != null)
         {
             playerManager.character1.position = camMatrix.MultiplyPoint3x4(char1LocalOffset);
@@ -83,13 +78,10 @@ public class TutorialCameraSetup : MonoBehaviour
 
     IEnumerator SmoothTransition(Transform camTransform, Vector3 endPos, Vector3 endRotEuler)
     {
-        // ==========================================
-        // [추가됨] 카메라 이동 연출 시작과 동시에 효과음 재생
         if (sfxSource != null && cameraMoveSound != null)
         {
             sfxSource.PlayOneShot(cameraMoveSound);
         }
-        // ==========================================
 
         Vector3 startPos = camTransform.position;
         Quaternion startRot = camTransform.rotation;
@@ -130,7 +122,6 @@ public class TutorialCameraSetup : MonoBehaviour
         }
         camTransform.rotation = finalRot;
 
-        // 연출이 모두 끝났으니 매니저 스크립트의 트래킹 기능을 켭니다.
         if (playerManager != null)
         {
             playerManager.isTracking = true;

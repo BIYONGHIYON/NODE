@@ -40,11 +40,9 @@ public class MapSelectionUI : MonoBehaviour
     public AudioClip successSound; 
     public AudioClip errorSound;   
     
-    // ========================================================
     [Header("Audio Mixer Settings")]
-    [Tooltip("여기에 'MainMixer' 등 사용 중인 AudioMixer를 넣어주세요.")]
+    [Tooltip("사용 중인 AudioMixer")]
     public AudioMixer mainMixer; 
-    // ========================================================
 
     private int currentIndex = 0;
     private bool isTransitioning = false; 
@@ -168,7 +166,6 @@ public class MapSelectionUI : MonoBehaviour
                     GameObject helperObj = new GameObject("TransitionHelper");
                     SceneTransitionHelper helper = helperObj.AddComponent<SceneTransitionHelper>();
                     
-                    // [수정] 믹서 데이터도 함께 넘겨줍니다!
                     helper.StartCoroutine(helper.Transition(targetName, fadeDuration, transitionVideo, mainMixer));
                 }
             }
@@ -210,7 +207,6 @@ public class MapSelectionUI : MonoBehaviour
 
 public class SceneTransitionHelper : MonoBehaviour
 {
-    // [수정] 인자에 AudioMixer를 추가로 받습니다.
     public IEnumerator Transition(string targetScene, float fadeDuration, VideoClip transitionVideo = null, AudioMixer mixer = null)
     {
         DontDestroyOnLoad(gameObject);
@@ -259,14 +255,10 @@ public class SceneTransitionHelper : MonoBehaviour
             vp.renderMode = VideoRenderMode.RenderTexture;
             vp.isLooping = false;
 
-            // ========================================================
-            // [비디오 오디오 설정 추가]
-            // VideoPlayer가 생성될 때 AudioSource도 같이 생성해서 연결합니다.
             vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
             AudioSource videoAudioSource = gameObject.AddComponent<AudioSource>();
             vp.SetTargetAudioSource(0, videoAudioSource);
 
-            // 전달받은 믹서가 있다면, 믹서의 "BGM" 그룹을 찾아서 연결합니다!
             if (mixer != null)
             {
                 AudioMixerGroup[] groups = mixer.FindMatchingGroups("BGM");
@@ -275,7 +267,6 @@ public class SceneTransitionHelper : MonoBehaviour
                     videoAudioSource.outputAudioMixerGroup = groups[0];
                 }
             }
-            // ========================================================
 
             RenderTexture rt = new RenderTexture(Screen.width, Screen.height, 0);
             vp.targetTexture = rt;

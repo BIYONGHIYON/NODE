@@ -12,7 +12,6 @@ public class PlayerRespawn : MonoBehaviour
     public float shakeMagnitude = 0.3f;    
     public float respawnDuration = 0.5f;   
 
-    // 나만의 개인 연료통 주머니
     public List<FuelTank> myCollectedTanks = new List<FuelTank>();
 
     private Rigidbody rb;
@@ -40,9 +39,6 @@ public class PlayerRespawn : MonoBehaviour
         }
         else if (other.CompareTag("Checkpoint"))
         {
-            // ========================================================
-            // [버그 수정] 다른 플레이어 간섭 없이 '나'의 위치와 주머니만 갱신!
-            // ========================================================
             currentCheckpoint = other.transform.position;
             
             foreach(FuelTank tank in myCollectedTanks)
@@ -62,14 +58,12 @@ public class PlayerRespawn : MonoBehaviour
 
         if (ropeAction != null) ropeAction.CutAllRopes();
 
-        // 내 주머니에 있는 연료통만 원래 자리로 되돌림
         foreach(FuelTank tank in myCollectedTanks)
         {
             if (tank != null) tank.ResetTank();
         }
         myCollectedTanks.Clear(); 
 
-        // 1단계: 흔들림 + 작아짐
         Vector3 originalPos = transform.position;
         float elapsed = 0f;
 
@@ -90,11 +84,9 @@ public class PlayerRespawn : MonoBehaviour
         transform.localScale = Vector3.zero;
         transform.position = originalPos; 
 
-        // 2단계: 내 전용 체크포인트로 텔레포트 
         transform.position = currentCheckpoint;
         yield return new WaitForSeconds(0.2f); 
 
-        // 3단계: 다시 커지면서 부활
         elapsed = 0f;
         while (elapsed < respawnDuration)
         {

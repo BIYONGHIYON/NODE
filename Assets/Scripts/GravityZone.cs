@@ -88,9 +88,6 @@ public class GravityZone : MonoBehaviour
         }
     }
 
-    // ========================================================
-    // [버그 수정] 속도(Velocity) 검사를 빼고 무조건 진짜 바닥인지 이중 검사
-    // ========================================================
     bool IsGrounded(Rigidbody rb)
     {
         Collider col = rb.GetComponent<Collider>();
@@ -124,23 +121,17 @@ public class GravityZone : MonoBehaviour
             if (hit.collider.attachedRigidbody == rb) continue;
             if (hit.collider.CompareTag("Player")) continue;
 
-            // --------------------------------------------------------
-            // 밟은 물체가 움직이는 돌(Rock 등)일 경우
-            // --------------------------------------------------------
             Rigidbody hitRb = hit.collider.attachedRigidbody;
             if (hitRb != null && !hitRb.isKinematic)
             {
-                // 돌의 최고점(속도=0) 꼼수를 막기 위해 무조건 이중 검사 실시!
                 float rockDistToGround = hit.collider.bounds.extents.y;
                 Vector3 rockCenter = hit.collider.bounds.center;
                 
-                // 2차 레이저: 돌의 중심에서 바닥을 향해 발사
                 RaycastHit[] rockHits = Physics.RaycastAll(rockCenter, Vector3.down, rockDistToGround + 0.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
                 
                 bool isRockGrounded = false;
                 foreach (RaycastHit rockHit in rockHits)
                 {
-                    // 돌 자신, 플레이어를 제외한 무언가(진짜 바닥)에 닿아있는지 확인
                     if (rockHit.collider == hit.collider) continue;
                     if (rockHit.transform.root == hitRb.transform.root) continue;
                     if (rockHit.collider.CompareTag("Player")) continue;
@@ -149,14 +140,12 @@ public class GravityZone : MonoBehaviour
                     break;
                 }
 
-                // 돌 밑에 진짜 바닥이 없다면, 이 돌은 공중에 떠 있는 가짜 바닥이므로 무시!
                 if (!isRockGrounded)
                 {
                     continue; 
                 }
             }
-            // --------------------------------------------------------
-
+            
             return true; 
         }
         

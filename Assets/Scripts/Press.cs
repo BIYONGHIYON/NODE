@@ -9,12 +9,11 @@ public class TutorialTextController : MonoBehaviour
     public float holdTime = 1f;
     
     [Header("Fade Out Settings")]
-    public float fadeOutDuration = 1.5f; // 서서히 사라지는데 걸리는 시간(초)
+    public float fadeOutDuration = 1.5f;
 
     private bool isStarting = false;
-    private bool isFadingOut = false; // 페이드 아웃이 시작되었는지 체크하는 플래그
+    private bool isFadingOut = false; 
 
-    // PlayerPrefs 대신 static 변수 사용 (게임 실행 중에만 유지, 껐다 켜면 초기화됨)
     private static bool isTutorialCleared = false; 
 
     void Start()
@@ -22,7 +21,6 @@ public class TutorialTextController : MonoBehaviour
         if (textMeshPro == null)
             textMeshPro = GetComponent<TextMeshPro>();
 
-        // static 변수를 확인하여 이미 클리어했다면 비활성화
         if (isTutorialCleared)
         {
             gameObject.SetActive(false);
@@ -69,7 +67,6 @@ public class TutorialTextController : MonoBehaviour
         startColor.a = 0f;
         textMeshPro.color = startColor;
 
-        // 튜토리얼 클리어 상태를 true로 변경
         isTutorialCleared = true;
 
         gameObject.SetActive(false);

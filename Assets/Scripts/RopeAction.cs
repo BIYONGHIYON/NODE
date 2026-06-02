@@ -5,7 +5,6 @@ public class RopeAction : MonoBehaviour
 {
     public static int connectedRopes = 0;
     
-    // =========================================================================
     // [지형(Anchor)용 컴포넌트]
     private LineRenderer lrAnchor;
     private SpringJoint sjAnchor;
@@ -22,7 +21,6 @@ public class RopeAction : MonoBehaviour
     private Transform targetPlayer;
     private Coroutine playerCoroutine;
     private GameObject playerHookObject; 
-    // =========================================================================
 
     private Animator anim; 
 
@@ -101,21 +99,19 @@ public class RopeAction : MonoBehaviour
 
     void Update()
     {
-        // 1. 키를 누르는 순간 타이머 시작
         if (IsRopeKeyDown())
         {
             isHoldingKey = true;
             holdTimer = 0f;
         }
 
-        // 2. 키를 꾹 누르고 있는 동안
         if (IsRopeKey() && isHoldingKey)
         {
             holdTimer += Time.deltaTime;
             
             if (holdTimer >= chargeTimeRequired)
             {
-                isHoldingKey = false; // 차징 완료!
+                isHoldingKey = false;
                 
                 RopeAction otherRope = GetOtherRope();
                 
@@ -129,7 +125,6 @@ public class RopeAction : MonoBehaviour
                 }
                 else
                 {
-                    // 발사하기 직전에 상대방과의 거리를 한 번 더 체크합니다!
                     if (otherRope != null)
                     {
                         float distanceToPartner = Vector3.Distance(ropeLaunchPoint.position, otherRope.ropeLaunchPoint.position);
@@ -138,16 +133,11 @@ public class RopeAction : MonoBehaviour
                         {
                             TargetOtherPlayer(otherRope);
                         }
-                        else
-                        {
-                            Debug.Log("파트너가 너무 멀어 로프를 연결할 수 없습니다!");
-                        }
                     }
                 }
             }
         }
 
-        // 3. 키를 뗐을 때
         if (IsRopeKeyUp() && isHoldingKey)
         {
             isHoldingKey = false; 
@@ -162,9 +152,6 @@ public class RopeAction : MonoBehaviour
             }
         }
 
-        // =====================================================================
-        // 라인 렌더러 위치 업데이트
-        // =====================================================================
         if (isAnchorRoped && targetAnchor != null && !isAnchorAnimating)
         {
             lrAnchor.SetPosition(0, ropeLaunchPoint.position);
@@ -196,9 +183,6 @@ public class RopeAction : MonoBehaviour
         if (anim != null) anim.SetBool("isTying", tying);
     }
 
-    // =========================================================================
-    // [지형(Anchor) 전용 로직] 
-    // =========================================================================
     void TryAttachToAnchor()
     {
         Collider[] cols = Physics.OverlapSphere(ropeLaunchPoint.position, ropeRange);
@@ -316,9 +300,6 @@ public class RopeAction : MonoBehaviour
         isAnchorAnimating = false;
     }
 
-    // =========================================================================
-    // [플레이어(Player) 전용 로직]
-    // =========================================================================
     public bool HasPlayerRopeActive()
     {
         return isPlayerRoped || isPlayerAnimating;
@@ -420,9 +401,6 @@ public class RopeAction : MonoBehaviour
         isPlayerAnimating = false;
     }
 
-    // =========================================================================
-    // [헬퍼 함수]
-    // =========================================================================
     RopeAction GetOtherRope()
     {
         RopeAction[] ropes = FindObjectsOfType<RopeAction>();
@@ -430,7 +408,6 @@ public class RopeAction : MonoBehaviour
         return null;
     }
 
-    // [추가됨] 누가 나한테 로프를 걸었는지 찾아내는 함수입니다!
     public RopeAction GetWhoRopedMe()
     {
         RopeAction[] ropes = FindObjectsOfType<RopeAction>();
@@ -459,13 +436,10 @@ public class RopeAction : MonoBehaviour
 
     public void CutAllRopes()
     {
-        // 1. 내가 플레이어에게 쏜 로프 해제
         if (HasPlayerRopeActive()) DetachPlayer();
         
-        // 2. 내가 지형(Anchor)에 쏜 로프 해제
         if (isAnchorRoped || isAnchorAnimating) DetachAnchor();
         
-        // 3. 상대방이 나에게 쏜 로프 해제
         RopeAction whoRopedMe = GetWhoRopedMe();
         if (whoRopedMe != null) whoRopedMe.DetachPlayer();
     }

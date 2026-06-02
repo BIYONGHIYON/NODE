@@ -12,13 +12,11 @@ public class WindArea : MonoBehaviour
     public float windDuration = 3f;
     public float pauseDuration = 2f;
 
-    // ==========================================
     [Header("시각 효과 (이펙트 & 애니메이션)")]
     public ParticleSystem windParticles;
     
     [Tooltip("선풍기/환풍기 오브젝트의 애니메이터를 연결하세요.")]
-    public Animator fanAnimator; // [추가됨] 선풍기 애니메이터 제어용
-    // ==========================================
+    public Animator fanAnimator;
 
     private bool isWindBlowing = true;
 
@@ -31,20 +29,16 @@ public class WindArea : MonoBehaviour
     {
         while (true)
         {
-            // 1. 바람 켜기 (선풍기 가동!)
             isWindBlowing = true;
             if (windParticles != null) windParticles.Play();
             
-            // 애니메이터의 "IsBlowing" 파라미터를 true로 만들어 날개를 회전시킵니다.
             if (fanAnimator != null) fanAnimator.SetBool("IsBlowing", true);
             
             yield return new WaitForSeconds(windDuration);
 
-            // 2. 바람 끄기 (선풍기 정지!)
             isWindBlowing = false;
             if (windParticles != null) windParticles.Stop();
             
-            // 애니메이터의 "IsBlowing" 파라미터를 false로 만들어 날개를 멈춥니다.
             if (fanAnimator != null) fanAnimator.SetBool("IsBlowing", false);
             
             yield return new WaitForSeconds(pauseDuration);

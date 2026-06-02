@@ -21,13 +21,11 @@ public class DontDistroy : MonoBehaviour
 
     void OnEnable()
     {
-        // 씬이 로드될 때마다 OnSceneLoaded 함수를 실행
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void OnDisable()
     {
-        // 스크립트가 꺼지거나 파괴될 때 연결 해제
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
@@ -35,7 +33,6 @@ public class DontDistroy : MonoBehaviour
     {
         bool isHiddenScene = false;
 
-        // 현재 들어온 씬이 숨겨야 하는 씬 목록에 있는지 확인
         for (int i = 0; i < hiddenScenes.Length; i++)
         {
             if (scene.name == hiddenScenes[i])
@@ -45,13 +42,11 @@ public class DontDistroy : MonoBehaviour
             }
         }
 
-        // 1. 자식 오브젝트(실제 모델링이나 이미지)들만 on/off
         for (int i = 0; i < transform.childCount; i++)
         {
             transform.GetChild(i).gameObject.SetActive(!isHiddenScene);
         }
 
-        // 2. 부모 자신에게 있는 오디오 관련 컴포넌트 제어
         
         if (audioListener != null)
         {
@@ -62,11 +57,11 @@ public class DontDistroy : MonoBehaviour
         {
             if (isHiddenScene)
             {
-                audioSource.Pause(); // 음악 일시정지 (다시 돌아오면 이어서 재생)
+                audioSource.Pause();
             }
             else
             {
-                if (!audioSource.isPlaying) audioSource.Play(); // 음악 다시 재생
+                if (!audioSource.isPlaying) audioSource.Play();
             }
         }
     }

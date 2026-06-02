@@ -6,7 +6,6 @@ public class MenuKeyboardNavigator : MonoBehaviour
     [Header("메뉴 항목 (위에서 아래 순서대로 드래그)")]
     public Selectable[] menuItems;
 
-    // ==========================================
     [Header("선택 표시용 커서 (UI Image)")]
     public RectTransform cursorRect; 
     
@@ -15,7 +14,6 @@ public class MenuKeyboardNavigator : MonoBehaviour
     
     [Tooltip("메뉴 항목 오른쪽 끝에서 얼마나 떨어질지 간격")]
     public float cursorSpacing = 5f; 
-    // ==========================================
 
     [Header("슬라이더 조절 속도")]
     public float sliderAdjustSpeed = 1.5f;
@@ -46,7 +44,6 @@ public class MenuKeyboardNavigator : MonoBehaviour
             UpdateCursorPosition();
         }
 
-        // 2. 버튼 클릭
         if (Input.GetKeyDown(KeyCode.F) || 
             Input.GetKeyDown(KeyCode.RightAlt) || 
             Input.GetKeyDown(KeyCode.RightControl) ||
@@ -59,7 +56,6 @@ public class MenuKeyboardNavigator : MonoBehaviour
             }
         }
 
-        // 3. 슬라이더 값 조절
         Selectable currentSliderItem = menuItems[currentIndex];
         if (currentSliderItem is Slider)
         {
@@ -85,20 +81,16 @@ public class MenuKeyboardNavigator : MonoBehaviour
         cursorRect.SetParent(targetRect.parent, false);
         cursorRect.SetAsLastSibling();
 
-        // 계산을 아주 쉽게 하기 위해 커서의 피벗(기준점)을 '왼쪽 중앙'으로 맞춥니다.
         cursorRect.anchorMin = new Vector2(0.5f, 0.5f);
         cursorRect.anchorMax = new Vector2(0.5f, 0.5f);
         cursorRect.pivot = new Vector2(0f, 0.5f); 
 
         cursorRect.localScale = targetRect.localScale; 
 
-        // 1. 크기 변경: 높이는 타겟 메뉴와 똑같이 맞추고, 두께는 설정한 고정값(cursorWidth)으로 설정합니다.
         cursorRect.sizeDelta = new Vector2(cursorWidth, targetRect.rect.height);
 
-        // 2. 위치 변경: 타겟의 로컬 좌표 기준으로 '오른쪽 끝(xMax)'에서 '간격(cursorSpacing)'만큼 떨어진 곳의 월드 좌표를 구합니다.
         Vector3 rightEdgeLocalPos = new Vector3(targetRect.rect.xMax + cursorSpacing, targetRect.rect.center.y, 0f);
         
-        // 구한 좌표를 적용합니다.
         cursorRect.position = targetRect.TransformPoint(rightEdgeLocalPos);
     }
 }

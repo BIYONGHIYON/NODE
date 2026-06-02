@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement; // 씬 관리 추가
+using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
 public class TitleCameraSetup : MonoBehaviour
@@ -11,7 +11,7 @@ public class TitleCameraSetup : MonoBehaviour
     public Vector3[] viewPositions;
     public float[] phase1XRotations; 
     
-    private Quaternion initialRotation; // 카메라의 초기 회전값 저장용
+    private Quaternion initialRotation;
     [Header("Scene Transition")]
     public string nextSceneName = "TitleScene"; 
 
@@ -33,37 +33,31 @@ public class TitleCameraSetup : MonoBehaviour
 
     void Awake()
     {
-        // StartScene일 때 카메라의 기본 회전값
         initialRotation = transform.rotation;
-        
-        // 씬이 로드될 때마다 실행할 함수
+
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void OnDestroy()
     {
-        // 스크립트가 파괴될 때 이벤트 해제
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     void Start()
     {
-        // Awake - OnSceneLoaded가 최초 1회 꼬일 경우를 대비한 안전장치
         if (SceneManager.GetActiveScene().name == "StartScene")
         {
             SetupCameraPosition();
             PlayIntroVideo();
-            GameData.justClearedPlanet = false; // 타이틀 화면에 진입할 때마다 초기화
+            GameData.justClearedPlanet = false; 
         }
     }
 
-    // 씬이 변경될 때마다 자동 호출
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == "TitleScene")
         {
-            // 메뉴를 통해 TitleScene으로 돌아왔을 때의 처리
-            GameData.justClearedPlanet = false; // 타이틀 화면에 진입할 때마다 초기화
+            GameData.justClearedPlanet = false; 
             SetupCameraPosition();
             SkipIntroVideo();
         }
@@ -80,7 +74,6 @@ public class TitleCameraSetup : MonoBehaviour
                 currentProgress = viewPositions.Length - 1;
             }
             
-            // 카메라 위치와 회전값을 무조건 타이틀 화면 상태로 원상복구
             transform.position = viewPositions[currentProgress];
             transform.rotation = initialRotation; 
         }
@@ -106,7 +99,7 @@ public class TitleCameraSetup : MonoBehaviour
         {
             videoPlayer.enabled = false;
         }
-        PlayBGM(); // 영상 없이 바로 BGM 재생
+        PlayBGM();
     }
 
     void Update()

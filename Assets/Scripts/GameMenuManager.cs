@@ -58,7 +58,6 @@ public class GameMenuManager : MonoBehaviour
     {
         string sceneName = SceneManager.GetActiveScene().name;
 
-        // TitleScene도 메뉴 타입 1을 사용하도록 추가
         if (sceneName == "StartScene" || sceneName == "TitleScene" || sceneName == "CharacterScene" || sceneName == "TutorialScene")
         {
             if (menuType1) menuType1.SetActive(true);
@@ -85,8 +84,6 @@ public class GameMenuManager : MonoBehaviour
         isPaused = false;
     }
 
-    // ==========================================
-    // 씬 이동 버튼 함수들
     public void GoToTitle()
     {
         if (isTransitioning) return; 
@@ -115,7 +112,6 @@ public class GameMenuManager : MonoBehaviour
         Debug.Log("게임 종료!");
         Application.Quit(); 
     }
-    // 볼륨 조절 및 저장 로직
     public void SetBGMVolume(float volume) 
     {
         if (mainMixer != null) mainMixer.SetFloat("BGMVolume", Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20);
