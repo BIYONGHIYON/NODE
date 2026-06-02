@@ -27,7 +27,7 @@
 
 ## 🛠️ 기술 스택 (Tech Stack)
 
-* **Engine:** Unity (사용하신 유니티 버전 입력)
+* **Engine:** Unity (2022)
 * **Language:** C#
 * **Platform:** PC (Windows / MacOS)
 
