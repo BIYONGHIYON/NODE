@@ -7,13 +7,13 @@ using UnityEngine.Video;
 public class TitleCameraSetup : MonoBehaviour
 {
     [Header("Camera Setup")]
-    public int currentProgress = 0; 
+    public int currentProgress = 0;
     public Vector3[] viewPositions;
-    public float[] phase1XRotations; 
-    
+    public float[] phase1XRotations;
     private Quaternion initialRotation;
+    
     [Header("Scene Transition")]
-    public string nextSceneName = "TitleScene"; 
+    public string nextSceneName = "TitleScene";
 
     public float GetPhase1XRotation()
     {
@@ -48,15 +48,20 @@ public class TitleCameraSetup : MonoBehaviour
         {
             SetupCameraPosition();
             PlayIntroVideo();
-            GameData.justClearedPlanet = false; 
+            GameData.justClearedPlanet = false;
         }
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // ========================================================
+        // [버그 수정] GameMenuManager 때문에 시간이 멈춰있을 수 있으므로 강제로 다시 켭니다!
+        Time.timeScale = 1f; 
+        // ========================================================
+
         if (scene.name == "TitleScene")
         {
-            GameData.justClearedPlanet = false; 
+            GameData.justClearedPlanet = false;
             SetupCameraPosition();
             SkipIntroVideo();
         }
@@ -72,9 +77,8 @@ public class TitleCameraSetup : MonoBehaviour
             {
                 currentProgress = viewPositions.Length - 1;
             }
-            
             transform.position = viewPositions[currentProgress];
-            transform.rotation = initialRotation; 
+            transform.rotation = initialRotation;
         }
     }
 
@@ -85,8 +89,8 @@ public class TitleCameraSetup : MonoBehaviour
         if (videoPlayer != null)
         {
             videoPlayer.enabled = true;
-            
-            videoPlayer.Play(); 
+            videoPlayer.loopPointReached += OnVideoEnd;
+            videoPlayer.Play();
         }
     }
 
@@ -103,28 +107,25 @@ public class TitleCameraSetup : MonoBehaviour
 
     void Update()
     {
-        if (videoPlayer != null && videoPlayer.enabled)
+        if (videoPlayer != null && videoPlayer.enabled && videoPlayer.isPlaying)
         {
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Escape))
             {
                 StopVideo();
-                return;
-            }
-
-            if (videoPlayer.isPrepared && videoPlayer.time > 0)
-            {
-                if (videoPlayer.time >= videoPlayer.length - 0.1f || !videoPlayer.isPlaying)
-                {
-                    StopVideo();
-                }
             }
         }
+    }
+
+    void OnVideoEnd(VideoPlayer vp)
+    {
+        StopVideo();
     }
 
     void StopVideo()
     {
         if (videoPlayer != null && videoPlayer.enabled)
         {
+            videoPlayer.loopPointReached -= OnVideoEnd;
             videoPlayer.Stop();
             videoPlayer.enabled = false;
         }
