@@ -1,6 +1,6 @@
 # 🚀 [NODE]
 
-두 명의 우주인이 로프에 의지해 다이내믹한 중력을 극복하고 우주를 탐험하는 2.5D Local Co-op 플랫포머 게임
+두 우주비행사가 로프를 이용해 다이내믹한 중력을 극복하고 우주를 탐험하는 2.5D Local Co-op 플랫포머 게임
 
 https://github.com/user-attachments/assets/5ab698a2-caba-4773-ac90-e37cc6a2ec21
 
