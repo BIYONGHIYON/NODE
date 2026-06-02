@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FuelTank : MonoBehaviour
@@ -12,12 +11,9 @@ public class FuelTank : MonoBehaviour
     private bool isCollected = false;
     private Vector3 originalScale;
 
-    // [핵심] 체크포인트를 찍기 전까지 '임시로' 먹은 연료통들을 기억하는 공유 보관함입니다.
-    public static List<FuelTank> recentlyCollected = new List<FuelTank>();
-
     void Start()
     {
-        recentlyCollected.Clear(); // 씬이 시작될 때 찌꺼기가 남아있지 않도록 싹 비워줍니다.
+        // 원래 크기 기억 및 UI 끄기
         originalScale = transform.localScale;
         
         if (fuelAcquiredUI != null)
@@ -28,9 +24,21 @@ public class FuelTank : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // 태그가 "Player"인 오브젝트가 닿았을 때만 작동!
-        if (!isCollected && other.CompareTag("Player"))
+        // 이미 누군가 먹고 연출이 진행 중이라면 무시합니다.
+        if (isCollected) return;
+
+        if (other.CompareTag("Player"))
         {
+            // 1. 나를 먹은 플레이어의 부활 스크립트를 찾습니다.
+            PlayerRespawn playerScript = other.GetComponentInParent<PlayerRespawn>();
+            
+            // 2. 그 플레이어의 "개인 주머니"에 나를 추가합니다.
+            if (playerScript != null && !playerScript.myCollectedTanks.Contains(this))
+            {
+                playerScript.myCollectedTanks.Add(this);
+            }
+
+            // 3. 바로 끄지 않고, 작아지면서 UI를 띄우는 예쁜 연출 코루틴을 실행합니다!
             StartCoroutine(CollectRoutine());
         }
     }
@@ -40,14 +48,14 @@ public class FuelTank : MonoBehaviour
         isCollected = true;
         GameData.isFuelAcquired = true;
         
-        // 보관함에 이 연료통을 등록해둡니다. (죽으면 뱉어내기 위해)
-        recentlyCollected.Add(this); 
-
+        // UI 켜기
         if (fuelAcquiredUI != null) fuelAcquiredUI.SetActive(true);
 
+        // 중복해서 먹지 못하도록 충돌체만 먼저 꺼줍니다.
         Collider col = GetComponent<Collider>();
         if (col != null) col.enabled = false;
 
+        // 부드럽게 작아지는 연출
         float elapsed = 0f;
         while (elapsed < shrinkDuration)
         {
@@ -58,12 +66,15 @@ public class FuelTank : MonoBehaviour
         }
         transform.localScale = Vector3.zero;
 
+        // UI가 떠 있을 남은 시간만큼 대기
         float waitTime = Mathf.Max(0f, textDisplayTime - shrinkDuration);
         yield return new WaitForSeconds(waitTime);
 
+        // UI 끄기
         if (fuelAcquiredUI != null) fuelAcquiredUI.SetActive(false);
         
-        // 🚨 여기서 Destroy(gameObject)를 하지 않고 투명하게 숨겨만 둡니다!
+        // 주의: Destroy나 SetActive(false)를 하지 않고 투명해진 상태(Scale 0)로 둡니다.
+        // 그래야 죽었을 때 다시 ResetTank()를 불러서 크기를 키울 수 있습니다.
     }
 
     // 플레이어가 죽었을 때 PlayerRespawn 스크립트가 호출할 함수입니다.
@@ -73,6 +84,7 @@ public class FuelTank : MonoBehaviour
         
         isCollected = false;
         GameData.isFuelAcquired = false;
+        
         transform.localScale = originalScale; // 크기 원상복구
         
         Collider col = GetComponent<Collider>();

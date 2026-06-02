@@ -795,6 +795,7 @@ MonoBehaviour:
   - {x: 130, y: 382, z: -1021}
   - {x: 143, y: 177, z: -512}
   - {x: 139, y: 25, z: -116}
+  - {x: 139, y: 25, z: -116}
 --- !u!114 &748320031
 MonoBehaviour:
   m_ObjectHideFlags: 0

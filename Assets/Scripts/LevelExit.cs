@@ -19,11 +19,14 @@ public class LevelExit : MonoBehaviour
     // 씬 내의 다른 출구들과 중복 실행을 막기 위해 static(전역) 변수로 선언
     private static bool isTransitioning = false; 
     
-    // 외부(다른 출구)에서 몇 명이나 들어왔는지 확인할 수 있게 숨김 처리 후 public 전환
     [HideInInspector]
     public List<GameObject> playersInZone = new List<GameObject>(); 
 
-    private static LevelExit[] allExits; // 씬 내의 모든 탈출구 목록
+    // ========================================================
+    // [버그 수정] static을 제거하여 씬이 바뀔 때마다 깔끔하게 초기화되도록 합니다!
+    private LevelExit[] allExits; 
+    // ========================================================
+
     private Coroutine countdownCoroutine;
     private Coroutine warningCoroutine;
 
@@ -31,14 +34,15 @@ public class LevelExit : MonoBehaviour
     {
         // 씬이 로드될 때 전역 변수 초기화
         isTransitioning = false; 
+
+        // [버그 수정] Start보다 무조건 먼저 실행되는 Awake에서 출구들을 미리 찾아둡니다!
+        // 플레이어가 시작하자마자 출구에 닿아도 에러가 나지 않습니다.
+        allExits = FindObjectsOfType<LevelExit>();
     }
 
     void Start()
     {
         if (warningUI != null) warningUI.SetActive(false);
-        
-        // 시작할 때 씬에 있는 모든 탈출구를 자동으로 찾아서 배열로 저장
-        allExits = FindObjectsOfType<LevelExit>();
     }
 
     void OnTriggerEnter(Collider other)
@@ -70,7 +74,6 @@ public class LevelExit : MonoBehaviour
             playersInZone.Remove(other.gameObject);
         }
 
-        // 누군가 나갔으니 조건이 깨졌는지(1초 대기 취소) 확인
         CheckGlobalCondition();
     }
 
@@ -78,30 +81,29 @@ public class LevelExit : MonoBehaviour
     {
         if (isTransitioning) return;
 
+        // [이중 안전장치] 혹시라도 출구 배열이 비어있거나, 이전 씬의 찌꺼기가 남아 파괴된 상태(null)라면 다시 찾습니다.
+        if (allExits == null || allExits.Length == 0 || allExits[0] == null)
+        {
+            allExits = FindObjectsOfType<LevelExit>();
+        }
+
         bool conditionMet = false;
 
-        // ========================================================
-        // [핵심] 출구 개수에 따른 자동 조건 분기
-        // ========================================================
         if (allExits.Length == 1)
         {
-            // 출구가 1개뿐이라면: 두 명이 모두 이 구역에 있어야 함
             conditionMet = (playersInZone.Count >= 2);
         }
         else if (allExits.Length >= 2)
         {
-            // 출구가 2개 이상이라면: 첫 번째 출구와 두 번째 출구 모두 1명 이상씩 있어야 함
             conditionMet = (allExits[0].playersInZone.Count >= 1 && allExits[1].playersInZone.Count >= 1);
         }
 
-        // 조건과 연료통을 모두 만족했다면 1초 카운트다운 시작
         if (conditionMet && GameData.isFuelAcquired)
         {
             StartCountdownOnAll();
         }
         else
         {
-            // 한 명이라도 1초가 되기 전에 밖으로 나가면 즉시 카운트다운 취소!
             StopCountdownOnAll();
         }
     }
@@ -128,10 +130,8 @@ public class LevelExit : MonoBehaviour
 
     private IEnumerator CountdownRoutine()
     {
-        // 인스펙터에서 설정한 시간(1초)만큼 대기
         yield return new WaitForSeconds(waitTime);
 
-        // 1초가 무사히 지났다면 클리어 처리 진행
         if (isTransitioning) yield break;
         isTransitioning = true;
 
@@ -148,7 +148,6 @@ public class LevelExit : MonoBehaviour
 
     public void StartWarning()
     {
-        // 경고가 이미 켜져 있다면 껐다 다시 켬 (깜빡임 방지)
         if (warningCoroutine != null) StopCoroutine(warningCoroutine);
         warningCoroutine = StartCoroutine(ShowWarningRoutine());
     }
@@ -163,20 +162,21 @@ public class LevelExit : MonoBehaviour
         }
     }
 
-    // 모든 탈출구의 타이머를 동시에 조작하기 위한 헬퍼 함수
     void StartCountdownOnAll()
     {
+        if (allExits == null) return;
         foreach (var exit in allExits)
         {
-            exit.StartCountdown();
+            if (exit != null) exit.StartCountdown();
         }
     }
 
     void StopCountdownOnAll()
     {
+        if (allExits == null) return;
         foreach (var exit in allExits)
         {
-            exit.StopCountdown();
+            if (exit != null) exit.StopCountdown();
         }
     }
 }

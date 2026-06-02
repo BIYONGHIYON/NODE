@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic; 
 using UnityEngine;
 
 public class PlayerRespawn : MonoBehaviour
@@ -10,6 +11,9 @@ public class PlayerRespawn : MonoBehaviour
     public float deathDuration = 0.5f;     
     public float shakeMagnitude = 0.3f;    
     public float respawnDuration = 0.5f;   
+
+    // 나만의 개인 연료통 주머니
+    public List<FuelTank> myCollectedTanks = new List<FuelTank>();
 
     private Rigidbody rb;
     private RopeAction ropeAction;
@@ -36,17 +40,16 @@ public class PlayerRespawn : MonoBehaviour
         }
         else if (other.CompareTag("Checkpoint"))
         {
+            // ========================================================
+            // [버그 수정] 다른 플레이어 간섭 없이 '나'의 위치와 주머니만 갱신!
+            // ========================================================
             currentCheckpoint = other.transform.position;
             
-            // ========================================================
-            // [추가됨] 체크포인트를 무사히 찍었으니, 
-            // 방금까지 먹었던 연료통들을 진짜로 획득 처리(영구 파괴)합니다!
-            foreach(FuelTank tank in FuelTank.recentlyCollected)
+            foreach(FuelTank tank in myCollectedTanks)
             {
-                if (tank != null) Destroy(tank.gameObject);
+                if (tank != null) Destroy(tank.gameObject); // 세이브 완료 (파괴)
             }
-            FuelTank.recentlyCollected.Clear(); // 보관함 비우기
-            // ========================================================
+            myCollectedTanks.Clear(); // 내 주머니만 비우기
         }
     }
 
@@ -54,27 +57,17 @@ public class PlayerRespawn : MonoBehaviour
     {
         isDead = true;
 
-        if (!rb.isKinematic)
-        {
-            rb.velocity = Vector3.zero;
-        }
+        if (!rb.isKinematic) rb.velocity = Vector3.zero;
         rb.isKinematic = true;
 
-        if (ropeAction != null)
-        {
-            ropeAction.isHoldingKey = false;
-            ropeAction.DetachPlayer(); 
-        }
+        if (ropeAction != null) ropeAction.CutAllRopes();
 
-        // ========================================================
-        // [추가됨] 죽었으니 체크포인트를 찍기 전까지 먹었던 연료통을 
-        // 전부 제자리로 뱉어냅니다 (원상복구)!
-        foreach(FuelTank tank in FuelTank.recentlyCollected)
+        // 내 주머니에 있는 연료통만 원래 자리로 되돌림
+        foreach(FuelTank tank in myCollectedTanks)
         {
             if (tank != null) tank.ResetTank();
         }
-        FuelTank.recentlyCollected.Clear(); // 보관함 비우기
-        // ========================================================
+        myCollectedTanks.Clear(); 
 
         // 1단계: 흔들림 + 작아짐
         Vector3 originalPos = transform.position;
@@ -97,7 +90,7 @@ public class PlayerRespawn : MonoBehaviour
         transform.localScale = Vector3.zero;
         transform.position = originalPos; 
 
-        // 2단계: 체크포인트로 텔레포트 
+        // 2단계: 내 전용 체크포인트로 텔레포트 
         transform.position = currentCheckpoint;
         yield return new WaitForSeconds(0.2f); 
 

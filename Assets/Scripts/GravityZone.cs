@@ -13,8 +13,6 @@ public class GravityZone : MonoBehaviour
 
     private Dictionary<Rigidbody, int> playerJumpCounts = new Dictionary<Rigidbody, int>();
     private Dictionary<Rigidbody, bool> playerWasRoped = new Dictionary<Rigidbody, bool>();
-    
-    // [핵심 추가] 각 플레이어가 마지막으로 점프한 시간을 기록하는 장부
     private Dictionary<Rigidbody, float> lastJumpTime = new Dictionary<Rigidbody, float>(); 
 
     void Update()
@@ -25,13 +23,11 @@ public class GravityZone : MonoBehaviour
         {
             if (rb == null || rb.isKinematic) continue;
 
-            // 1. [버그 수정됨] 바닥에 닿아있어도, '마지막 점프 후 0.2초'가 지나야만 횟수를 리셋합니다!
             if (Time.time - lastJumpTime[rb] > 0.2f && rb.velocity.y <= 0.1f && IsGrounded(rb))
             {
                 playerJumpCounts[rb] = 0;
             }
 
-            // 2. 나 또는 상대방의 로프 연결 상태 감지
             bool isCurrentlyRoped = false;
             
             SpringJoint[] joints = rb.GetComponents<SpringJoint>();
@@ -72,7 +68,6 @@ public class GravityZone : MonoBehaviour
 
             bool shouldJump = false;
 
-            // 3. MovingAst 스크립트에서 할당된 upKey를 읽어옵니다.
             MovingAst moveScript = rb.GetComponent<MovingAst>();
             if (moveScript != null)
             {
@@ -82,11 +77,10 @@ public class GravityZone : MonoBehaviour
                 }
             }
 
-            // 4. 점프 버튼을 눌렀고 남은 점프 횟수가 있다면 날아오릅니다!
             if (shouldJump && playerJumpCounts[rb] < maxJumps)
             {
                 playerJumpCounts[rb]++; 
-                lastJumpTime[rb] = Time.time; // [추가됨] 방금 점프했다고 시간을 기록!
+                lastJumpTime[rb] = Time.time; 
                 
                 rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
                 rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
@@ -94,6 +88,9 @@ public class GravityZone : MonoBehaviour
         }
     }
 
+    // ========================================================
+    // [버그 수정] 속도(Velocity) 검사를 빼고 무조건 진짜 바닥인지 이중 검사
+    // ========================================================
     bool IsGrounded(Rigidbody rb)
     {
         Collider col = rb.GetComponent<Collider>();
@@ -117,13 +114,48 @@ public class GravityZone : MonoBehaviour
             distToGround = col.bounds.extents.y;
         }
 
+        // 1차 레이저: 플레이어 발밑 검사
         RaycastHit[] hits = Physics.RaycastAll(center, Vector3.down, distToGround + 0.15f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
 
         foreach (RaycastHit hit in hits)
         {
+            // 나 자신과 관련된 오브젝트 무시
             if (hit.transform.root == rb.transform.root) continue;
             if (hit.collider.attachedRigidbody == rb) continue;
             if (hit.collider.CompareTag("Player")) continue;
+
+            // --------------------------------------------------------
+            // 밟은 물체가 움직이는 돌(Rock 등)일 경우
+            // --------------------------------------------------------
+            Rigidbody hitRb = hit.collider.attachedRigidbody;
+            if (hitRb != null && !hitRb.isKinematic)
+            {
+                // 돌의 최고점(속도=0) 꼼수를 막기 위해 무조건 이중 검사 실시!
+                float rockDistToGround = hit.collider.bounds.extents.y;
+                Vector3 rockCenter = hit.collider.bounds.center;
+                
+                // 2차 레이저: 돌의 중심에서 바닥을 향해 발사
+                RaycastHit[] rockHits = Physics.RaycastAll(rockCenter, Vector3.down, rockDistToGround + 0.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+                
+                bool isRockGrounded = false;
+                foreach (RaycastHit rockHit in rockHits)
+                {
+                    // 돌 자신, 플레이어를 제외한 무언가(진짜 바닥)에 닿아있는지 확인
+                    if (rockHit.collider == hit.collider) continue;
+                    if (rockHit.transform.root == hitRb.transform.root) continue;
+                    if (rockHit.collider.CompareTag("Player")) continue;
+                    
+                    isRockGrounded = true;
+                    break;
+                }
+
+                // 돌 밑에 진짜 바닥이 없다면, 이 돌은 공중에 떠 있는 가짜 바닥이므로 무시!
+                if (!isRockGrounded)
+                {
+                    continue; 
+                }
+            }
+            // --------------------------------------------------------
 
             return true; 
         }
@@ -141,7 +173,7 @@ public class GravityZone : MonoBehaviour
             {
                 playerJumpCounts.Add(rb, 0);
                 playerWasRoped.Add(rb, false); 
-                lastJumpTime.Add(rb, 0f); // [추가됨] 장부에 시간 등록
+                lastJumpTime.Add(rb, 0f); 
             }
         }
     }
@@ -166,7 +198,7 @@ public class GravityZone : MonoBehaviour
             {
                 playerJumpCounts.Remove(rb);
                 playerWasRoped.Remove(rb); 
-                lastJumpTime.Remove(rb); // [추가됨] 장부에서 삭제
+                lastJumpTime.Remove(rb); 
             }
         }
     }

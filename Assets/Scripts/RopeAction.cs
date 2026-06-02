@@ -48,7 +48,6 @@ public class RopeAction : MonoBehaviour
     [Header("로프 애니메이션 설정")]
     public float ropeShootSpeed = 40f; 
 
-    // [수정됨] 차징 시간을 0.7초로 변경
     [Header("조작 설정")]
     [Tooltip("플레이어 연결/해제에 필요한 꾹 누르는 시간")]
     public float chargeTimeRequired = 0.5f;
@@ -109,12 +108,11 @@ public class RopeAction : MonoBehaviour
             holdTimer = 0f;
         }
 
-        // 2. 키를 꾹 누르고 있는 동안 (0.7초 도달 체크)
+        // 2. 키를 꾹 누르고 있는 동안
         if (IsRopeKey() && isHoldingKey)
         {
             holdTimer += Time.deltaTime;
             
-            // [수정됨] 고정된 1초 대신 인스펙터 설정값(0.7초) 사용
             if (holdTimer >= chargeTimeRequired)
             {
                 isHoldingKey = false; // 차징 완료!
@@ -131,19 +129,17 @@ public class RopeAction : MonoBehaviour
                 }
                 else
                 {
-                    // [버그 수정] 발사하기 직전에 상대방과의 거리를 한 번 더 체크합니다!
+                    // 발사하기 직전에 상대방과의 거리를 한 번 더 체크합니다!
                     if (otherRope != null)
                     {
                         float distanceToPartner = Vector3.Distance(ropeLaunchPoint.position, otherRope.ropeLaunchPoint.position);
                         
-                        // 거리가 로프 최대 사거리(ropeRange) 이내일 때만 발사 허용
                         if (distanceToPartner <= ropeRange)
                         {
                             TargetOtherPlayer(otherRope);
                         }
                         else
                         {
-                            // 너무 멀어졌다면 발사 실패 처리 (효과음 등을 넣기 좋은 위치)
                             Debug.Log("파트너가 너무 멀어 로프를 연결할 수 없습니다!");
                         }
                     }
@@ -151,7 +147,7 @@ public class RopeAction : MonoBehaviour
             }
         }
 
-        // 3. 키를 뗐을 때 (0.7초 미만으로 눌렀다 뗐을 때)
+        // 3. 키를 뗐을 때
         if (IsRopeKeyUp() && isHoldingKey)
         {
             isHoldingKey = false; 
@@ -276,7 +272,6 @@ public class RopeAction : MonoBehaviour
         sjAnchor.spring = ropeSpring;
         sjAnchor.damper = ropeDamper;
         
-        // [버그 방지] 지형 훅도 ropeRange를 절대 넘지 못하게 강제 고정합니다.
         float actualDistance = Vector3.Distance(ropeLaunchPoint.position, targetAnchor.position);
         sjAnchor.maxDistance = Mathf.Min(actualDistance, ropeRange);
     }
@@ -329,7 +324,6 @@ public class RopeAction : MonoBehaviour
         return isPlayerRoped || isPlayerAnimating;
     }
 
-    // [수정됨] 매개변수로 미리 찾은 상대방(otherRope)을 전달받습니다.
     void TargetOtherPlayer(RopeAction otherRope)
     {
         if (otherRope != null)
@@ -383,7 +377,6 @@ public class RopeAction : MonoBehaviour
         sjPlayer.spring = ropeSpring;
         sjPlayer.damper = ropeDamper;
         
-        // [핵심 버그 수정] 거리가 벌어진 채로 연결되었더라도, 로프의 물리적 최대 길이는 절대 ropeRange를 초과하지 않게 못 박습니다!
         float actualDistance = Vector3.Distance(ropeLaunchPoint.position, targetPlayer.position);
         sjPlayer.maxDistance = Mathf.Min(actualDistance, ropeRange);
     }
@@ -437,6 +430,20 @@ public class RopeAction : MonoBehaviour
         return null;
     }
 
+    // [추가됨] 누가 나한테 로프를 걸었는지 찾아내는 함수입니다!
+    public RopeAction GetWhoRopedMe()
+    {
+        RopeAction[] ropes = FindObjectsOfType<RopeAction>();
+        foreach (var r in ropes)
+        {
+            if (r != this && r.HasPlayerRopeActive() && r.targetPlayer == this.ropeLaunchPoint)
+            {
+                return r;
+            }
+        }
+        return null;
+    }
+
     bool IsRopeKeyDown()
     {
         return (ropeKey1 != KeyCode.None && Input.GetKeyDown(ropeKey1)) || (ropeKey2 != KeyCode.None && Input.GetKeyDown(ropeKey2));
@@ -448,5 +455,18 @@ public class RopeAction : MonoBehaviour
     bool IsRopeKeyUp()
     {
         return (ropeKey1 != KeyCode.None && Input.GetKeyUp(ropeKey1)) || (ropeKey2 != KeyCode.None && Input.GetKeyUp(ropeKey2));
+    }
+
+    public void CutAllRopes()
+    {
+        // 1. 내가 플레이어에게 쏜 로프 해제
+        if (HasPlayerRopeActive()) DetachPlayer();
+        
+        // 2. 내가 지형(Anchor)에 쏜 로프 해제
+        if (isAnchorRoped || isAnchorAnimating) DetachAnchor();
+        
+        // 3. 상대방이 나에게 쏜 로프 해제
+        RopeAction whoRopedMe = GetWhoRopedMe();
+        if (whoRopedMe != null) whoRopedMe.DetachPlayer();
     }
 }
