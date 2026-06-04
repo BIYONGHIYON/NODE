@@ -1085,7 +1085,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 120
   m_CollisionDetection: 0
 --- !u!4 &43858322
@@ -1122,6 +1122,7 @@ MonoBehaviour:
   deathDuration: 0.5
   shakeMagnitude: 0.01
   respawnDuration: 0.5
+  myCollectedTanks: []
 --- !u!1 &44677495 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 184471b6accaa4097b0318bbd6534c0b,
@@ -24780,7 +24781,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 120
   m_CollisionDetection: 0
 --- !u!4 &1399610764
@@ -24817,6 +24818,7 @@ MonoBehaviour:
   deathDuration: 0.5
   shakeMagnitude: 0.01
   respawnDuration: 0.5
+  myCollectedTanks: []
 --- !u!1 &1400297361 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -8296157782123876547, guid: ff8bbcdac6d68476b9323379886df6d8,

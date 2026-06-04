@@ -17,8 +17,6 @@ public class EarthEndingManager : MonoBehaviour
 
     void Start()
     {
-        GameData.currentProgress = 0;
-
         if (videoPlayer != null)
         {
             videoPlayer.loopPointReached += OnVideoEnd;

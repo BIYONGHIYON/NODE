@@ -122,6 +122,10 @@ public class LevelExit : MonoBehaviour
         isTransitioning = true;
 
         GameData.currentProgress = progressToSetOnClear; 
+
+        PlayerPrefs.SetInt("SaveProgress", GameData.currentProgress);
+        PlayerPrefs.Save(); 
+
         GameData.isFuelAcquired = false;
         GameData.justClearedPlanet = true;
 

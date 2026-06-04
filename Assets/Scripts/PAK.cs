@@ -1,7 +1,8 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
-using UnityEngine.Video; 
+using UnityEngine.Video;
+using UnityEngine.EventSystems;
 
 public class PAK : MonoBehaviour
 {
@@ -72,6 +73,13 @@ public class PAK : MonoBehaviour
 
         if (Input.anyKeyDown && !Input.GetKeyDown(KeyCode.Escape) && !isStarting && Time.timeScale > 0f)
         {
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
+                {
+                    return; 
+                }
+            }
             isStarting = true;
 
             if (sfxSource != null && cameraMoveSound != null)
@@ -81,6 +89,11 @@ public class PAK : MonoBehaviour
             
             if (textMeshPro != null) textMeshPro.enabled = false;
             if (titleImage != null) titleImage.SetActive(false);
+            GameObject newGameBtn = GameObject.Find("NewGame");
+            if (newGameBtn != null)
+            {
+                newGameBtn.SetActive(false);
+            }
             
             TrailRenderer[] trails = FindObjectsOfType<TrailRenderer>();
             foreach (TrailRenderer trail in trails)
