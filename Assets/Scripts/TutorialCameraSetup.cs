@@ -44,7 +44,6 @@ public class TutorialCameraSetup : MonoBehaviour
             TitleCameraSetup titleSetup = mainCam.GetComponent<TitleCameraSetup>();
             if (titleSetup != null && titleSetup.viewPositions.Length > 0)
             {
-                // GameData에서 정확한 진행도를 가져옵니다.
                 int index = Mathf.Clamp(GameData.currentProgress, 0, titleSetup.viewPositions.Length - 1);
                 Vector3 finalCamPos = titleSetup.viewPositions[index];
                 Quaternion finalCamRot = Quaternion.Euler(targetRotation);
