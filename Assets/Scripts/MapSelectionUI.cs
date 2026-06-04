@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI; 
 using UnityEngine.Video; 
-using UnityEngine.Audio; // 오디오 믹서 사용을 위해 추가
+using UnityEngine.Audio; 
 using System.Collections; 
 
 public class MapSelectionUI : MonoBehaviour
@@ -227,17 +227,6 @@ public class SceneTransitionHelper : MonoBehaviour
         }
         fadeImage.color = Color.black; 
 
-        SceneManager.LoadScene(targetScene);
-        
-        yield return null;
-        yield return null; 
-
-        MovingAst[] players = FindObjectsOfType<MovingAst>();
-        foreach(var p in players) 
-        {
-            if (p != null) p.enabled = false;
-        }
-
         if (transitionVideo != null)
         {
             GameObject videoObj = new GameObject("VideoUI");
@@ -258,6 +247,7 @@ public class SceneTransitionHelper : MonoBehaviour
             vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
             AudioSource videoAudioSource = gameObject.AddComponent<AudioSource>();
             vp.SetTargetAudioSource(0, videoAudioSource);
+            videoAudioSource.volume = 1.0f;
 
             if (mixer != null)
             {
@@ -296,7 +286,12 @@ public class SceneTransitionHelper : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        players = FindObjectsOfType<MovingAst>();
+        SceneManager.LoadScene(targetScene);
+        
+        yield return null;
+        yield return null; 
+
+        MovingAst[] players = FindObjectsOfType<MovingAst>();
         foreach(var p in players) 
         {
             if (p != null) p.enabled = true;

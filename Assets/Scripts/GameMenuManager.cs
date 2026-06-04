@@ -28,7 +28,19 @@ public class GameMenuManager : MonoBehaviour
     {
         if (pauseMenuRoot != null) pauseMenuRoot.SetActive(false);
 
-        // 슬라이더 값이 변할 때마다 자동으로 SetVolume 함수들이 실행되도록 연결!
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName == "TitleScene" || sceneName == "StartScene")
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        // ========================================================
+
         if (bgmSlider1) bgmSlider1.onValueChanged.AddListener(SetBGMVolume);
         if (sfxSlider1) sfxSlider1.onValueChanged.AddListener(SetSFXVolume);
         if (bgmSlider2) bgmSlider2.onValueChanged.AddListener(SetBGMVolume);
@@ -77,6 +89,9 @@ public class GameMenuManager : MonoBehaviour
         if (pauseMenuRoot) pauseMenuRoot.SetActive(true);
         Time.timeScale = 0f; 
         isPaused = true;
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void ResumeGame()
@@ -84,12 +99,22 @@ public class GameMenuManager : MonoBehaviour
         if (pauseMenuRoot) pauseMenuRoot.SetActive(false);
         Time.timeScale = 1f; 
         isPaused = false;
+
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName != "TitleScene" && sceneName != "StartScene")
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
     }
 
     public void GoToTitle()
     {
         if (isTransitioning) return; 
         isTransitioning = true;
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
 
         transform.SetParent(null); 
         DontDestroyOnLoad(gameObject);
@@ -111,7 +136,7 @@ public class GameMenuManager : MonoBehaviour
 
     public void QuitGame() 
     { 
-        Debug.Log("게임 종료!");
+        Debug.Log("게임 종료");
         Application.Quit(); 
     }
 
