@@ -36,6 +36,6 @@ https://github.com/user-attachments/assets/5ab698a2-caba-4773-ac90-e37cc6a2ec21
 ## ⚙️ 설치 및 실행 방법 (How to Play)
 
 1. [최신 Release 페이지로 이동](https://github.com/BIYONGHIYON/NODE/releases/latest)한 후, 본인의 운영체제에 맞는 설치 파일을 다운로드합니다.
-2. Windows의 경우 `NODE.exe`파일을 실행하여 설치합니다.
+2. Windows의 경우 `NODE_Win.exe`파일을 실행하여 설치합니다.
 3. Mac의 경우 `NODE_Mac.dmg`파일을 실행하여 설치합니다.
 4. 친구와 함께 플레이하세요!
