@@ -70,3 +70,12 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# 맨 아래에 복사해서 붙여넣으세요
+
+# VS Code settings
+.vscode/
+.vsconfig
+
+# MacOS system files
+.DS_Store
