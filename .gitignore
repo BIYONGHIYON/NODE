@@ -79,3 +79,6 @@ crashlytics-build.properties
 
 # MacOS system files
 .DS_Store
+
+# 업데이트 로그
+UpgradeLog.*
